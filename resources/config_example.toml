@@ -1,0 +1,12 @@
+debug = true
+server_host = "127.0.0.1"
+api_host = "example.org"
+server_port = "8080"
+cache_limit = 10000
+cache_ttl = "10m"
+
+[download]
+endpoint = "/download"
+
+[list]
+endpoint = "/list"

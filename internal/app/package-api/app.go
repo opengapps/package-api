@@ -46,10 +46,10 @@ func New(cfg *viper.Viper, cache *cache.Cache) (*Application, error) {
 func (a *Application) Run() error {
 	r := mux.NewRouter()
 	r.HandleFunc(a.cfg.GetString(config.DownloadEndpointKey), a.dlHandler()).
-		Host(a.cfg.GetString(config.ServerHostKey)).
+		Host(a.cfg.GetString(config.APIHostKey)).
 		Methods(http.MethodGet)
 	r.HandleFunc(a.cfg.GetString(config.ListEndpointKey), a.listHandler()).
-		Host(a.cfg.GetString(config.ServerHostKey)).
+		Host(a.cfg.GetString(config.APIHostKey)).
 		Methods(http.MethodGet)
 	a.server.Handler = handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),

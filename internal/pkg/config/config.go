@@ -11,6 +11,7 @@ const (
 	DebugKey            = "debug"
 	CacheLimitKey       = "cache_limit"
 	CacheTTLKey         = "cache_ttl"
+	APIHostKey          = "api_host"
 	ServerHostKey       = "server_host"
 	ServerPortKey       = "server_port"
 	DownloadEndpointKey = "endpoints.download"
@@ -46,6 +47,7 @@ func New(name, prefix string) *viper.Viper {
 	cfg.SetDefault(DebugKey, DefaultDebugFlag)
 	cfg.SetDefault(CacheLimitKey, DefaultCacheLimit)
 	cfg.SetDefault(CacheTTLKey, DefaultCacheTTL)
+	cfg.SetDefault(APIHostKey, DefaultServerHost)
 	cfg.SetDefault(ServerHostKey, DefaultServerHost)
 	cfg.SetDefault(ServerPortKey, DefaultServerPort)
 	cfg.SetDefault(DownloadEndpointKey, DefaultDLEndpointPath)

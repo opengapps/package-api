@@ -34,4 +34,5 @@ vendor
 
 # Unneeded files and folders
 .DS_Store
-*.toml
+config.toml
+package-api.toml
