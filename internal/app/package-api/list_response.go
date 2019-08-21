@@ -2,9 +2,17 @@ package packageapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"sync"
+	"time"
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"golang.org/x/xerrors"
+)
+
+const (
+	dateOnlyFormat    = "20060102"
+	humanDateTemplate = "%d %s %d"
 )
 
 // ListResponse is used for the /list endpoint
@@ -17,13 +25,24 @@ type ListResponse struct {
 
 // ArchRecord holds the list of gapps Variants per API and its date
 type ArchRecord struct {
-	APIList map[string]APIRecord `json:"apis"`
-	Date    string               `json:"date"`
+	APIList   map[string]APIRecord `json:"apis"`
+	Date      string               `json:"date"`
+	HumanDate string               `json:"human_date"`
 }
 
 // APIRecord holds all of the gapps Variants
 type APIRecord struct {
-	VariantList []string `json:"variants"`
+	VariantList []APIVariant `json:"variants"`
+}
+
+// APIVariant describes gapps Variant
+type APIVariant struct {
+	Name         string `json:"name"`
+	ZIP          string `json:"zip"`
+	ZIPSize      int64  `json:"zip_size"`
+	MD5          string `json:"md5"`
+	VersionInfo  string `json:"version_info"`
+	SourceReport string `json:"source_report"`
 }
 
 // ToJSON forms JSON body from a struct, ignoring Marshal error
@@ -35,14 +54,25 @@ func (r *ListResponse) ToJSON() []byte {
 }
 
 // AddPackage safely adds the package to the ListResponse
-func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android, v gapps.Variant) {
+func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android, v gapps.Variant) error {
 	r.mtx.Lock()
+	defer r.mtx.Unlock()
+
+	// parse date
+	dt, err := time.Parse(dateOnlyFormat, date)
+	if err != nil {
+		return xerrors.Errorf("unable to parse date: %w", err)
+	}
+	humandate := fmt.Sprintf(humanDateTemplate, dt.Day(), dt.Month(), dt.Year())
 
 	if r.ArchList == nil {
 		r.ArchList = make(map[string]ArchRecord)
 	}
 	if _, ok := r.ArchList[p.String()]; !ok {
-		r.ArchList[p.String()] = ArchRecord{Date: date}
+		r.ArchList[p.String()] = ArchRecord{
+			Date:      date,
+			HumanDate: humandate,
+		}
 	}
 	archRecord := r.ArchList[p.String()]
 
@@ -54,9 +84,19 @@ func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android
 	}
 	apiRecord := archRecord.APIList[a.HumanString()]
 
-	apiRecord.VariantList = append(apiRecord.VariantList, v.String())
+	apiRecord.VariantList = append(apiRecord.VariantList, newAPIVariant(date, p, a, v))
 	archRecord.APIList[a.HumanString()] = apiRecord
 	r.ArchList[p.String()] = archRecord
 
-	r.mtx.Unlock()
+	return nil
+}
+
+func newAPIVariant(date string, p gapps.Platform, a gapps.Android, v gapps.Variant) APIVariant {
+	return APIVariant{
+		Name:         v.String(),
+		ZIP:          formatLink(fieldZIP, date, p, a, v),
+		MD5:          formatLink(fieldMD5, date, p, a, v),
+		VersionInfo:  formatLink(fieldVersionInfo, date, p, a, v),
+		SourceReport: formatLink(fieldSourceReport, date, p, a, v),
+	}
 }

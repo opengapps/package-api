@@ -1,32 +1,12 @@
 package packageapi
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
 	"golang.org/x/xerrors"
 )
-
-const (
-	pkgTemplate          = "open_gapps-%s-%s-%s-%s"
-	reportTemplate       = "sources_report-%s-%s-%s.txt"
-	masterMirrorTemplate = "https://master.dl.sourceforge.net/project/opengapps/%s/%s/%s"
-	mirrorsTemplate      = "https://sourceforge.net/settings/mirror_choices?projectname=opengapps&filename=%s/%s/%s"
-
-	zipExtension = ".zip"
-	md5Extension = ".zip.md5"
-	logExtension = ".versionlog.txt"
-)
-
-var templateMap = map[string]string{
-	fieldZIP:          pkgTemplate + zipExtension,
-	fieldZIPMirrors:   pkgTemplate + zipExtension,
-	fieldMD5:          pkgTemplate + md5Extension,
-	fieldVersionInfo:  pkgTemplate + logExtension,
-	fieldSourceReport: reportTemplate,
-}
 
 func (a *Application) dlHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -47,19 +27,8 @@ func (a *Application) dlHandler() http.HandlerFunc {
 			return
 		}
 
-		for f, t := range templateMap {
-			var filename string
-			switch f {
-			case fieldZIPMirrors:
-				filename = fmt.Sprintf(t, platform, android.HumanString(), variant, date)
-				resp.SetField(f, fmt.Sprintf(mirrorsTemplate, platform, date, filename))
-			case fieldSourceReport:
-				filename = fmt.Sprintf(t, platform, android.HumanString(), date)
-				resp.SetField(f, fmt.Sprintf(masterMirrorTemplate, platform, date, filename))
-			default:
-				filename = fmt.Sprintf(t, platform, android.HumanString(), variant, date)
-				resp.SetField(f, fmt.Sprintf(masterMirrorTemplate, platform, date, filename))
-			}
+		for f := range templateMap {
+			resp.SetField(f, formatLink(f, date, platform, android, variant))
 		}
 
 		respond(w, http.StatusOK, resp.ToJSON())

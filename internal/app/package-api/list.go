@@ -76,7 +76,10 @@ func (a *Application) listHandler() http.HandlerFunc {
 						if err != nil {
 							return xerrors.Errorf("unable to parse variant '%s' of API '%s' in LATEST file for arch '%s': %w", variant, asset.API, arch, err)
 						}
-						resp.AddPackage(release.Date, arch, pkgAPI, pkgVariant)
+
+						if err = resp.AddPackage(release.Date, arch, pkgAPI, pkgVariant); err != nil {
+							return xerrors.Errorf("unable to add package for variant '%s' of API '%s' in LATEST file for arch '%s': %w", variant, asset.API, arch, err)
+						}
 					}
 				}
 

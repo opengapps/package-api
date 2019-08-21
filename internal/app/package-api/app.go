@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"github.com/opengapps/package-api/internal/app"
 	"github.com/opengapps/package-api/internal/pkg/cache"
 	"github.com/opengapps/package-api/internal/pkg/config"
@@ -42,10 +44,16 @@ func New(cfg *viper.Viper, cache *cache.Cache) (*Application, error) {
 
 // Run launches the Application
 func (a *Application) Run() error {
-	m := http.NewServeMux()
-	m.HandleFunc(a.cfg.GetString(config.DownloadEndpointKey), a.dlHandler())
-	m.HandleFunc(a.cfg.GetString(config.ListEndpointKey), a.listHandler())
-	a.server.Handler = m
+	r := mux.NewRouter()
+	r.HandleFunc(a.cfg.GetString(config.DownloadEndpointKey), a.dlHandler()).
+		Host(a.cfg.GetString(config.ServerHostKey)).
+		Methods(http.MethodGet)
+	r.HandleFunc(a.cfg.GetString(config.ListEndpointKey), a.listHandler()).
+		Host(a.cfg.GetString(config.ServerHostKey)).
+		Methods(http.MethodGet)
+	a.server.Handler = handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+	)(r)
 
 	log.Printf("Serving at %s", a.server.Addr)
 	return a.server.ListenAndServe()
