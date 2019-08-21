@@ -5,15 +5,6 @@ import (
 	"sync"
 )
 
-const (
-	fieldZIP          = "ZIP"
-	fieldZIPMirrors   = "ZIPMirrors"
-	fieldMD5          = "MD5"
-	fieldVersionInfo  = "VersionInfo"
-	fieldSourceReport = "SourceReport"
-	fieldError        = "Error"
-)
-
 // DownloadResponse is used for the /download endpoint
 type DownloadResponse struct {
 	ZIP          string `json:"zip,omitempty"`

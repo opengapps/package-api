@@ -16,6 +16,13 @@ const (
 	zipExtension = ".zip"
 	md5Extension = ".zip.md5"
 	logExtension = ".versionlog.txt"
+
+	fieldZIP          = "ZIP"
+	fieldZIPMirrors   = "ZIPMirrors"
+	fieldMD5          = "MD5"
+	fieldVersionInfo  = "VersionInfo"
+	fieldSourceReport = "SourceReport"
+	fieldError        = "Error"
 )
 
 var templateMap = map[string]string{
