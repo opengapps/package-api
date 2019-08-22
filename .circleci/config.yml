@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/golang:1.12
     working_directory: /go/src/github.com/opengapps/package-api
@@ -27,5 +27,14 @@ jobs:
       - restore_cache:
           key: module-cache-{{ checksum "go.mod" }}
       - run:
+          name: Check dependencies
+          command: make deps
+      - run:
           name: Lint
           command: make lint
+workflows:
+  version: 2
+  test_and_lint:
+    jobs:
+      - test
+      - lint
