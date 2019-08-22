@@ -3,7 +3,6 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.12
-      - image: golangci/golangci-lint:v1.17
     working_directory: /go/src/github.com/opengapps/package-api
     steps:
       - checkout
@@ -15,10 +14,18 @@ jobs:
       - run:
           name: Test with coverage
           command: make test-cover
-      - run:
-          name: Run linter
-          command: make lint
       - save_cache:
           key: module-cache-{{ checksum "go.mod" }}
           paths:
             - /go/pkg/mod/cache/download/
+  lint:
+    docker:
+      - image: golangci/golangci-lint:v1.17
+    working_directory: /go/src/github.com/opengapps/package-api
+    steps:
+      - checkout
+      - restore_cache:
+          key: module-cache-{{ checksum "go.mod" }}
+      - run:
+          name: Lint
+          command: make lint
