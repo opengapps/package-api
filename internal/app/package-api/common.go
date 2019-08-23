@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	pkgTemplate          = "open_gapps-%s-%s-%s-%s"
-	reportTemplate       = "sources_report-%s-%s-%s.txt"
-	masterMirrorTemplate = "https://master.dl.sourceforge.net/project/opengapps/%s/%s/%s"
-	mirrorsTemplate      = "https://sourceforge.net/settings/mirror_choices?projectname=opengapps&filename=%s/%s/%s"
+	downloadTemplate = "https://downloads.sourceforge.net/project/opengapps/%s/%s/%s"
+	mirrorsTemplate  = "https://sourceforge.net/settings/mirror_choices?projectname=opengapps&filename=%s/%s/%s"
+	pkgTemplate      = "open_gapps-%s-%s-%s-%s"
+	reportTemplate   = "sources_report-%s-%s-%s.txt"
 
 	zipExtension = ".zip"
 	md5Extension = ".zip.md5"
@@ -39,9 +39,9 @@ func formatLink(field, date string, p gapps.Platform, a gapps.Android, v gapps.V
 		return fmt.Sprintf(mirrorsTemplate, p, date, filename)
 	case fieldSourceReport:
 		filename := fmt.Sprintf(templateMap[field], p, a.HumanString(), date)
-		return fmt.Sprintf(masterMirrorTemplate, p, date, filename)
+		return fmt.Sprintf(downloadTemplate, p, date, filename)
 	default:
 		filename := fmt.Sprintf(templateMap[field], p, a.HumanString(), v, date)
-		return fmt.Sprintf(masterMirrorTemplate, p, date, filename)
+		return fmt.Sprintf(downloadTemplate, p, date, filename)
 	}
 }
