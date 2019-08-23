@@ -24,7 +24,7 @@ Also you can clone this repo and use the build/install/run targets from [Makefil
 
 ## Configuration
 
-Uou can use any config file format supported by [Viper](https://github.com/spf13/viper) library (currently our preferred format is [TOML](https://github.com/toml-lang/toml)).
+You can use any config file format supported by [Viper](https://github.com/spf13/viper) library (currently our preferred format is [TOML](https://github.com/toml-lang/toml)).
 
 In case you don't want to use local config, it will rely on ENV variables with prefix `PACKAGE_API_` (can be changed in [Makefile](./Makefile)).
 
