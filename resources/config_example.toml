@@ -4,9 +4,13 @@ api_host = "example.org"
 server_port = "8080"
 cache_limit = 10000
 cache_ttl = "10m"
+github_token = "YOUR_TOKEN"
 
-[download]
-endpoint = "/download"
+[db]
+path = "./bolt.db"
+timeout = "1s"
 
-[list]
-endpoint = "/list"
+[endpoint]
+download = "/download"
+list = "/list"
+rss = "/rss"

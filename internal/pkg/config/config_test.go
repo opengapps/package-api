@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/opengapps/package-api/internal/pkg/config"
+
 	"github.com/stretchr/testify/assert"
 )
 

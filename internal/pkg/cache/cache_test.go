@@ -4,9 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/groupcache/lru"
 	"github.com/opengapps/package-api/internal/pkg/cache"
 	"github.com/opengapps/package-api/internal/pkg/config"
+
+	"github.com/golang/groupcache/lru"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -4,18 +4,28 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/opengapps/package-api/internal/pkg/link"
+	"github.com/opengapps/package-api/internal/pkg/models"
+
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
 	"golang.org/x/xerrors"
 )
 
+const (
+	queryArgArch    = "arch"
+	queryArgAPI     = "api"
+	queryArgVariant = "variant"
+	queryArgDate    = "date"
+)
+
 func (a *Application) dlHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var resp DownloadResponse
+		var resp models.DownloadResponse
 
 		args, err := validateDLRequest(r)
 		if err != nil {
 			resp.Error = err.Error()
-			respond(w, http.StatusBadRequest, resp.ToJSON())
+			respondJSON(w, http.StatusBadRequest, resp.ToJSON())
 			return
 		}
 
@@ -23,40 +33,40 @@ func (a *Application) dlHandler() http.HandlerFunc {
 		platform, android, variant, err := gapps.ParsePackageParts(args[:3])
 		if err != nil {
 			resp.Error = err.Error()
-			respond(w, http.StatusBadRequest, resp.ToJSON())
+			respondJSON(w, http.StatusBadRequest, resp.ToJSON())
 			return
 		}
 
-		for f := range templateMap {
-			resp.SetField(f, formatLink(f, date, platform, android, variant))
+		for f := range link.TemplateMap {
+			resp.SetField(f, link.New(f, date, platform, android, variant))
 		}
 
-		respond(w, http.StatusOK, resp.ToJSON())
+		respondJSON(w, http.StatusOK, resp.ToJSON())
 	}
 }
 
 func validateDLRequest(req *http.Request) ([]string, error) {
 	queryArgs := req.URL.Query()
 
-	arch := queryArgs.Get("arch")
+	arch := queryArgs.Get(queryArgArch)
 	if arch == "" {
-		return nil, xerrors.New("'arch' param is empty or missing")
+		return nil, xerrors.Errorf("'%s' param is empty or missing", queryArgArch)
 	}
 
-	api := queryArgs.Get("api")
+	api := queryArgs.Get(queryArgAPI)
 	if api == "" {
-		return nil, xerrors.New("'api' param is empty or missing")
+		return nil, xerrors.Errorf("'%s' param is empty or missing", queryArgAPI)
 	}
 	api = strings.Replace(api, ".", "", 1)
 
-	variant := queryArgs.Get("variant")
+	variant := queryArgs.Get(queryArgVariant)
 	if variant == "" {
-		return nil, xerrors.New("'variant' param is empty or missing")
+		return nil, xerrors.Errorf("'%s' param is empty or missing", queryArgVariant)
 	}
 
-	date := queryArgs.Get("date")
+	date := queryArgs.Get(queryArgDate)
 	if date == "" {
-		return nil, xerrors.New("'date' param is empty or missing")
+		return nil, xerrors.Errorf("'%s' param is empty or missing", queryArgDate)
 	}
 
 	return []string{arch, api, variant, date}, nil

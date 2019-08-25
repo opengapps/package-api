@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/opengapps/package-api/internal/pkg/config"
+
 	"github.com/spf13/viper"
 )
 

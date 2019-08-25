@@ -36,3 +36,4 @@ vendor
 .DS_Store
 config.toml
 package-api.toml
+package-api.db

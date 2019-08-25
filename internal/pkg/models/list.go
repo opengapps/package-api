@@ -1,4 +1,4 @@
-package packageapi
+package models
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"github.com/opengapps/package-api/internal/pkg/link"
 	"golang.org/x/xerrors"
 )
 
@@ -94,9 +95,9 @@ func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android
 func newAPIVariant(date string, p gapps.Platform, a gapps.Android, v gapps.Variant) APIVariant {
 	return APIVariant{
 		Name:         v.String(),
-		ZIP:          formatLink(fieldZIP, date, p, a, v),
-		MD5:          formatLink(fieldMD5, date, p, a, v),
-		VersionInfo:  formatLink(fieldVersionInfo, date, p, a, v),
-		SourceReport: formatLink(fieldSourceReport, date, p, a, v),
+		ZIP:          link.New(link.FieldZIP, date, p, a, v),
+		MD5:          link.New(link.FieldMD5, date, p, a, v),
+		VersionInfo:  link.New(link.FieldVersionInfo, date, p, a, v),
+		SourceReport: link.New(link.FieldSourceReport, date, p, a, v),
 	}
 }

@@ -1,9 +1,13 @@
-package packageapi
+package models
 
 import (
 	"encoding/json"
 	"sync"
+
+	"github.com/opengapps/package-api/internal/pkg/link"
 )
+
+const fieldError = "Error"
 
 // DownloadResponse is used for the /download endpoint
 type DownloadResponse struct {
@@ -44,15 +48,15 @@ func (r *DownloadResponse) HasCriticalError() bool {
 func (r *DownloadResponse) SetField(field, value string) {
 	r.mtx.Lock()
 	switch field {
-	case fieldZIP:
+	case link.FieldZIP:
 		r.ZIP = value
-	case fieldZIPMirrors:
+	case link.FieldZIPMirrors:
 		r.ZIPMirrors = value
-	case fieldMD5:
+	case link.FieldMD5:
 		r.MD5 = value
-	case fieldVersionInfo:
+	case link.FieldVersionInfo:
 		r.VersionInfo = value
-	case fieldSourceReport:
+	case link.FieldSourceReport:
 		r.SourceReport = value
 	case fieldError:
 		r.Error = value
