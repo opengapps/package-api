@@ -61,11 +61,12 @@ func (a *Application) listHandler() http.HandlerFunc {
 func getLatestArchKey(arch string, keys []string) string {
 	var result string
 	for _, key := range keys {
-		parts := strings.Split(key, "-")
+		parts := strings.Split(key, "-") // date-arch
 		if len(parts) != 2 {
 			log.Warnf("Bad DB key '%s'", key)
 			continue
 		}
+		// latest date by models.DateOnlyFormat is always bigger
 		if parts[1] == arch && key > result {
 			result = key
 		}

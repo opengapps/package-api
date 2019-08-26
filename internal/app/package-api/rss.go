@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/opengapps/package-api/internal/pkg/config"
-
 	"github.com/gorilla/feeds"
+	"github.com/gorilla/mux"
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"github.com/opengapps/package-api/internal/pkg/config"
 	"golang.org/x/xerrors"
 )
 
@@ -18,29 +18,34 @@ const (
 
 	authorName    = "opengappsbuildbot"
 	copyrightText = "Copyright © 2015-2019 The Open GApps Team"
+
+	creationTS = 1566816430 // time of the feed creation
 )
+
+var baseFeed = feeds.Feed{
+	Link: &feeds.Link{
+		Type: "application/atom+xml",
+		Rel:  "self",
+	},
+	Author:    &feeds.Author{Name: authorName},
+	Created:   time.Unix(creationTS, 0),
+	Copyright: copyrightText,
+}
 
 func (a *Application) rssHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		feed := &feeds.Feed{}
+		*feed = baseFeed
+
 		arch, err := validateRSSRequest(r)
 		if err != nil {
 			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
 			return
 		}
 
-		now := time.Now()
-		feed := &feeds.Feed{
-			Title:       fmt.Sprintf(feedNameTemplate, arch),
-			Description: fmt.Sprintf(feedDescTemplate, arch),
-			Link: &feeds.Link{
-				Type: "application/atom+xml",
-				Rel:  "self",
-				Href: r.URL.Scheme + a.cfg.GetString(config.APIHostKey) + r.RequestURI,
-			},
-			Author:    &feeds.Author{Name: authorName},
-			Created:   now,
-			Copyright: copyrightText,
-		}
+		feed.Title = fmt.Sprintf(feedNameTemplate, arch)
+		feed.Description = fmt.Sprintf(feedDescTemplate, arch)
+		feed.Link.Href = r.URL.Scheme + a.cfg.GetString(config.APIHostKey) + r.RequestURI
 
 		atom, err := feed.ToAtom()
 		if err != nil {
@@ -53,11 +58,9 @@ func (a *Application) rssHandler() http.HandlerFunc {
 }
 
 func validateRSSRequest(req *http.Request) (gapps.Platform, error) {
-	queryArgs := req.URL.Query()
-
-	arch := queryArgs.Get(queryArgArch)
-	if arch == "" {
-		return 0, xerrors.Errorf("'%s' param is empty or missing", queryArgArch)
+	arch, ok := mux.Vars(req)[queryArgArch]
+	if !ok {
+		return 0, xerrors.Errorf(missingParamErrTemplate, queryArgArch)
 	}
 
 	platform, err := gapps.PlatformString(arch)

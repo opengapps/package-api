@@ -9,11 +9,19 @@ import (
 	"github.com/opengapps/package-api/internal/pkg/db"
 
 	"github.com/google/go-github/v28/github"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/xerrors"
+)
+
+const (
+	missingParamErrTemplate = "'%s' param is empty or missing"
+
+	queryArgArch    = "arch"
+	queryArgAPI     = "api"
+	queryArgVariant = "variant"
+	queryArgDate    = "date"
 )
 
 // Application holds all the services and config
@@ -37,7 +45,9 @@ func New(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Application, err
 	}
 
 	server := &http.Server{
-		Addr: cfg.GetString(config.ServerHostKey) + ":" + cfg.GetString(config.ServerPortKey),
+		Addr:         cfg.GetString(config.ServerHostKey) + ":" + cfg.GetString(config.ServerPortKey),
+		ReadTimeout:  cfg.GetDuration(config.HTTPTimeoutKey),
+		WriteTimeout: cfg.GetDuration(config.HTTPTimeoutKey),
 	}
 
 	app.PrintInfo(cfg)
@@ -51,22 +61,24 @@ func New(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Application, err
 
 // Run launches the Application
 func (a *Application) Run() error {
-	r := mux.NewRouter()
-	r.HandleFunc(a.cfg.GetString(config.DownloadEndpointKey), a.dlHandler()).
+	// init router
+	r := mux.NewRouter().
 		Host(a.cfg.GetString(config.APIHostKey)).
 		Methods(http.MethodGet).
-		Queries(queryArgArch, "", queryArgAPI, "", queryArgVariant, "", queryArgDate, "")
-	r.HandleFunc(a.cfg.GetString(config.ListEndpointKey), a.listHandler()).
-		Host(a.cfg.GetString(config.APIHostKey)).
-		Methods(http.MethodGet)
-	r.HandleFunc(a.cfg.GetString(config.RSSEndpointKey), a.rssHandler()).
-		Host(a.cfg.GetString(config.APIHostKey)).
-		Methods(http.MethodGet).
-		Queries(queryArgArch, "")
-	a.server.Handler = handlers.CORS(
-		handlers.AllowedOrigins([]string{"*"}),
-	)(r)
+		Subrouter()
 
+	r.Name("download").Path(a.cfg.GetString(config.DownloadEndpointKey)).
+		Queries(queryArgArch, "", queryArgAPI, "", queryArgVariant, "", queryArgDate, "").
+		HandlerFunc(a.dlHandler())
+	r.Name("list").Path(a.cfg.GetString(config.ListEndpointKey)).
+		HandlerFunc(a.listHandler())
+	r.Name("rss").Path(a.cfg.GetString(config.RSSEndpointKey)).
+		HandlerFunc(a.rssHandler())
+
+	// set handler with middlewares
+	a.server.Handler = withMiddlewares(r)
+
+	// serve
 	log.Warnf("Serving at %s", a.server.Addr)
 	return a.server.ListenAndServe()
 }

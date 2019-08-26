@@ -10,6 +10,7 @@ const (
 	APIHostKey             = "api_host"
 	ServerHostKey          = "server_host"
 	ServerPortKey          = "server_port"
+	HTTPTimeoutKey         = "http_timeout"
 	DBPathKey              = "db.path"
 	DBTimeoutKey           = "db.timeout"
 	DownloadEndpointKey    = "endpoint.download"
@@ -20,11 +21,12 @@ const (
 
 	DefaultServerHost          = "127.0.0.1"
 	DefaultServerPort          = "8080"
+	DefaultHTTPTimeout         = "3s"
 	DefaultDBPath              = "bolt.db"
 	DefaultDBTimeout           = "1s"
 	DefaultDLEndpointPath      = "/download"
 	DefaultListEndpointPath    = "/list"
-	DefaultRSSEndpointPath     = "/rss"
+	DefaultRSSEndpointPath     = "/rss/{arch}"
 	DefaultGithubWatchInterval = "1m"
 )
 
@@ -47,11 +49,19 @@ func New(name, prefix string) *viper.Viper {
 	cfg.SetDefault(APIHostKey, DefaultServerHost)
 	cfg.SetDefault(ServerHostKey, DefaultServerHost)
 	cfg.SetDefault(ServerPortKey, DefaultServerPort)
+	cfg.SetDefault(HTTPTimeoutKey, DefaultHTTPTimeout)
 	cfg.SetDefault(DBPathKey, DefaultDBPath)
 	cfg.SetDefault(DBTimeoutKey, DefaultDBTimeout)
 	cfg.SetDefault(DownloadEndpointKey, DefaultDLEndpointPath)
 	cfg.SetDefault(ListEndpointKey, DefaultListEndpointPath)
 	cfg.SetDefault(RSSEndpointKey, DefaultRSSEndpointPath)
 	cfg.SetDefault(GithubWatchIntervalKey, DefaultGithubWatchInterval)
+
+	// print contents in debug mode
+	log.Debug("Using config:")
+	for k, v := range cfg.AllSettings() {
+		log.Debugf("  %s: %v", k, v)
+	}
+
 	return cfg
 }

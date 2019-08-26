@@ -1,6 +1,7 @@
 api_host = "example.org"
 server_host = "127.0.0.1"
 server_port = "8080"
+http_timeout = "3s"
 
 [db]
 path = "./bolt.db"
@@ -9,7 +10,7 @@ timeout = "1s"
 [endpoint]
 download = "/download"
 list = "/list"
-rss = "/rss"
+rss = "/rss/{arch}.atom"
 
 [github]
 token = "YOUR_TOKEN"

@@ -21,6 +21,7 @@ var testConfigKeys = map[string]interface{}{
 	config.DBTimeoutKey:           config.DefaultDBTimeout,
 	config.DownloadEndpointKey:    config.DefaultDLEndpointPath,
 	config.ListEndpointKey:        config.DefaultListEndpointPath,
+	config.RSSEndpointKey:         config.DefaultRSSEndpointPath,
 	config.GithubWatchIntervalKey: config.DefaultGithubWatchInterval,
 }
 

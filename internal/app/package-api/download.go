@@ -1,8 +1,10 @@
 package packageapi
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/opengapps/package-api/internal/pkg/link"
 	"github.com/opengapps/package-api/internal/pkg/models"
@@ -11,12 +13,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-const (
-	queryArgArch    = "arch"
-	queryArgAPI     = "api"
-	queryArgVariant = "variant"
-	queryArgDate    = "date"
-)
+const mirrorTemplate = "?r=&ts=%d&use_mirror=autoselect"
 
 func (a *Application) dlHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -37,8 +34,13 @@ func (a *Application) dlHandler() http.HandlerFunc {
 			return
 		}
 
+		now := time.Now().Unix()
 		for f := range link.TemplateMap {
-			resp.SetField(f, link.New(f, date, platform, android, variant))
+			url := link.New(f, date, platform, android, variant)
+			if f != link.FieldZIPMirrors {
+				url += fmt.Sprintf(mirrorTemplate, now)
+			}
+			resp.SetField(f, url)
 		}
 
 		respondJSON(w, http.StatusOK, resp.ToJSON())
@@ -50,23 +52,23 @@ func validateDLRequest(req *http.Request) ([]string, error) {
 
 	arch := queryArgs.Get(queryArgArch)
 	if arch == "" {
-		return nil, xerrors.Errorf("'%s' param is empty or missing", queryArgArch)
+		return nil, xerrors.Errorf(missingParamErrTemplate, queryArgArch)
 	}
 
 	api := queryArgs.Get(queryArgAPI)
 	if api == "" {
-		return nil, xerrors.Errorf("'%s' param is empty or missing", queryArgAPI)
+		return nil, xerrors.Errorf(missingParamErrTemplate, queryArgAPI)
 	}
 	api = strings.Replace(api, ".", "", 1)
 
 	variant := queryArgs.Get(queryArgVariant)
 	if variant == "" {
-		return nil, xerrors.Errorf("'%s' param is empty or missing", queryArgVariant)
+		return nil, xerrors.Errorf(missingParamErrTemplate, queryArgVariant)
 	}
 
 	date := queryArgs.Get(queryArgDate)
 	if date == "" {
-		return nil, xerrors.Errorf("'%s' param is empty or missing", queryArgDate)
+		return nil, xerrors.Errorf(missingParamErrTemplate, queryArgDate)
 	}
 
 	return []string{arch, api, variant, date}, nil
