@@ -37,7 +37,7 @@ func (a *Application) rssHandler() http.HandlerFunc {
 		feed := &feeds.Feed{}
 		*feed = baseFeed
 
-		arch, err := validateRSSRequest(r)
+		arch, err := parseRSSRequest(r)
 		if err != nil {
 			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
 			return
@@ -57,7 +57,7 @@ func (a *Application) rssHandler() http.HandlerFunc {
 	}
 }
 
-func validateRSSRequest(req *http.Request) (gapps.Platform, error) {
+func parseRSSRequest(req *http.Request) (gapps.Platform, error) {
 	arch, ok := mux.Vars(req)[queryArgArch]
 	if !ok {
 		return 0, xerrors.Errorf(missingParamErrTemplate, queryArgArch)

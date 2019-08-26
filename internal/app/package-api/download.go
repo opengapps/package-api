@@ -19,7 +19,7 @@ func (a *Application) dlHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var resp models.DownloadResponse
 
-		args, err := validateDLRequest(r)
+		args, err := parseDLRequest(r)
 		if err != nil {
 			resp.Error = err.Error()
 			respondJSON(w, http.StatusBadRequest, resp.ToJSON())
@@ -47,7 +47,7 @@ func (a *Application) dlHandler() http.HandlerFunc {
 	}
 }
 
-func validateDLRequest(req *http.Request) ([]string, error) {
+func parseDLRequest(req *http.Request) ([]string, error) {
 	queryArgs := req.URL.Query()
 
 	arch := queryArgs.Get(queryArgArch)
