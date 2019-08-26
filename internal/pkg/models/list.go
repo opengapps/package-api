@@ -11,9 +11,10 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// Public consts
 const (
-	dateOnlyFormat    = "20060102"
-	humanDateTemplate = "%d %s %d"
+	DateOnlyFormat    = "20060102"
+	HumanDateTemplate = "%d %s %d"
 )
 
 // ListResponse is used for the /list endpoint
@@ -60,11 +61,11 @@ func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android
 	defer r.mtx.Unlock()
 
 	// parse date
-	dt, err := time.Parse(dateOnlyFormat, date)
+	dt, err := time.Parse(DateOnlyFormat, date)
 	if err != nil {
 		return xerrors.Errorf("unable to parse date: %w", err)
 	}
-	humandate := fmt.Sprintf(humanDateTemplate, dt.Day(), dt.Month(), dt.Year())
+	humandate := fmt.Sprintf(HumanDateTemplate, dt.Day(), dt.Month(), dt.Year())
 
 	if r.ArchList == nil {
 		r.ArchList = make(map[string]ArchRecord)

@@ -1,16 +1,21 @@
 package db
 
 import (
-	"log"
 	"os"
 	"sort"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"go.etcd.io/bbolt"
 	"golang.org/x/xerrors"
 )
 
-const openMode = 0755
+const (
+	// KeyTemplate describes the format of the keys inside of a bucket
+	KeyTemplate = "%s-%s"
+
+	openMode = 0755
+)
 
 // Package vars
 var (
@@ -29,7 +34,7 @@ type DB struct {
 // New creates new instance of DB
 func New(path string, timeout time.Duration) (*DB, error) {
 	// open connection to the DB
-	log.Print("Creating DB connection")
+	log.WithField("path", path).WithField("timeout", timeout).Debug("Creating DB connection")
 	opts := bbolt.DefaultOptions
 	if timeout > 0 {
 		opts.Timeout = timeout
@@ -40,7 +45,7 @@ func New(path string, timeout time.Duration) (*DB, error) {
 	}
 
 	// create global bucket if it doesn't exist yet
-	log.Printf("Setting the default bucket '%s'", bucketName)
+	log.WithField("bucket", string(bucketName)).Debug("Setting the default bucket")
 	err = b.Update(func(tx *bbolt.Tx) error {
 		_, bErr := tx.CreateBucketIfNotExists(bucketName)
 		return bErr
@@ -51,17 +56,18 @@ func New(path string, timeout time.Duration) (*DB, error) {
 
 	// return the DB
 	db := &DB{b: b, timeout: timeout}
-	log.Print("DB initiated")
+	log.Debug("DB initiated")
 	return db, nil
 }
 
 // Close closes the DB
 func (db *DB) Close(delete bool) error {
-	log.Print("Closing the DB")
+	log.Debug("Closing the DB")
 	path := db.b.Path()
 	done := make(chan error)
 	go func() {
 		done <- db.b.Close()
+		log.Debug("DB closed OK")
 		close(done)
 	}()
 	timer := time.NewTimer(db.timeout)
@@ -83,7 +89,7 @@ func (db *DB) Close(delete bool) error {
 // Keys returns a list of available keys in the global bucket, sorted alphabetically
 func (db *DB) Keys() ([]string, error) {
 	var keys []string
-	log.Print("Getting the list of DB current keys")
+	log.Debug("Getting the list of DB current keys")
 	err := db.b.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(bucketName)
 		if b == nil {
@@ -99,6 +105,7 @@ func (db *DB) Keys() ([]string, error) {
 	if err != nil {
 		return nil, xerrors.Errorf("unable to get the list of keys from DB: %w", err)
 	}
+	log.Debug("Got the keys")
 	sort.Strings(keys)
 	return keys, nil
 }
@@ -106,7 +113,7 @@ func (db *DB) Keys() ([]string, error) {
 // Get acquires value from DB by provided key
 func (db *DB) Get(key string) ([]byte, error) {
 	var value []byte
-	log.Printf("Getting value from DB for key '%s'", key)
+	log.WithField("key", key).Debug("Getting value from DB")
 	err := db.b.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(bucketName)
 		if b == nil {
@@ -125,13 +132,13 @@ func (db *DB) Get(key string) ([]byte, error) {
 	if err != nil {
 		return nil, xerrors.Errorf("unable to get value for key '%s' from DB: %w", key, err)
 	}
-	log.Print("Got the value")
+	log.WithField("key", key).Debug("Got the value")
 	return value, nil
 }
 
 // Put sets/updates the value in DB by provided bucket and key
 func (db *DB) Put(key string, val []byte) error {
-	log.Printf("Saving the value to DB for key '%s'", key)
+	log.WithField("key", key).Debug("Saving the value to DB")
 	err := db.b.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(bucketName)
 		if b == nil {
@@ -142,12 +149,13 @@ func (db *DB) Put(key string, val []byte) error {
 	if err != nil {
 		return xerrors.Errorf("unable to put value for key '%s' to DB: %w", key, err)
 	}
+	log.WithField("key", key).Debug("Saved successfully")
 	return nil
 }
 
 // Delete removes the value from DB by provided bucket and key
 func (db *DB) Delete(key string) error {
-	log.Printf("Deleting the key '%s' from DB", key)
+	log.WithField("key", key).Debug("Deleting from DB")
 	err := db.b.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(bucketName)
 		if b == nil {
@@ -158,11 +166,13 @@ func (db *DB) Delete(key string) error {
 	if err != nil {
 		return xerrors.Errorf("unable to delete value for key '%s' from DB: %w", key, err)
 	}
+	log.WithField("key", key).Debug("Deleted successfully")
 	return nil
 }
 
 // Purge removes the bucket from DB
 func (db *DB) Purge() error {
+	log.Debug("Purging the DB")
 	err := db.b.Update(func(tx *bbolt.Tx) error {
 		return tx.DeleteBucket(bucketName)
 	})

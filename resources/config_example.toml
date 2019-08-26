@@ -1,10 +1,6 @@
-debug = true
-server_host = "127.0.0.1"
 api_host = "example.org"
+server_host = "127.0.0.1"
 server_port = "8080"
-cache_limit = 10000
-cache_ttl = "10m"
-github_token = "YOUR_TOKEN"
 
 [db]
 path = "./bolt.db"
@@ -14,3 +10,7 @@ timeout = "1s"
 download = "/download"
 list = "/list"
 rss = "/rss"
+
+[github]
+token = "YOUR_TOKEN"
+watch_interval = "1m"

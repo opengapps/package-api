@@ -2,7 +2,8 @@ package watch
 
 import (
 	"context"
-	"log"
+	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/google/go-github/v28/github"
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/xerrors"
@@ -40,19 +42,24 @@ func NewWatcher(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Watcher, 
 	return &Watcher{cfg: cfg, db: storage, gh: gh}, nil
 }
 
-func (w *Watcher) launch(ctx context.Context) {
+// Launch starts the watcher
+func (w *Watcher) Launch(ctx context.Context) {
+	if err := w.checkRelease(ctx); err != nil {
+		log.WithError(err).Error("Unable to check for the latest release")
+	}
+
 	period := w.cfg.GetDuration(config.GithubWatchIntervalKey)
 	ticker := time.NewTicker(period)
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Print("Context canceled, exiting watcher")
+			log.Warn("Context canceled, exiting watcher")
 			ticker.Stop()
 			return
 		case <-ticker.C:
 			if err := w.checkRelease(ctx); err != nil {
-				log.Printf("Unable to check for the latest release: %s", err)
+				log.WithError(err).Error("Unable to check for the latest release")
 			}
 		}
 	}
@@ -69,10 +76,29 @@ func (w *Watcher) checkRelease(ctx context.Context) error {
 		return err
 	}
 
-	// TODO: save to DB
-	// for arch, record := range resp.ArchList {
-	// 	record.Date
-	// }
+	// check results and save to DB if necessary
+	for arch, record := range resp.ArchList {
+		key := fmt.Sprintf(db.KeyTemplate, record.Date, arch)
+		_, err := w.db.Get(key)
+
+		switch {
+		case err == nil:
+			// data is already there, continue
+			continue
+		case xerrors.Is(err, db.ErrNilValue), xerrors.Is(err, db.ErrNotFound):
+			// save the new data
+			var data []byte
+			if data, err = json.Marshal(record); err != nil {
+				log.WithError(err).Errorf("Unable to marshal the data for the arch '%s' and date '%s'", arch, record.Date)
+				continue
+			}
+			if err = w.db.Put(key, data); err != nil {
+				log.WithError(err).Errorf("Unable to save the data for the arch '%s' and date '%s'", arch, record.Date)
+			}
+		default:
+			return xerrors.Errorf("unable to check DB key: %w", err)
+		}
+	}
 
 	return nil
 }

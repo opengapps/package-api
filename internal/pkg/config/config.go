@@ -1,16 +1,12 @@
 package config
 
 import (
-	"log"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 // Config keys and default values
 const (
-	DebugKey               = "debug"
-	CacheLimitKey          = "cache_limit"
-	CacheTTLKey            = "cache_ttl"
 	APIHostKey             = "api_host"
 	ServerHostKey          = "server_host"
 	ServerPortKey          = "server_port"
@@ -22,9 +18,6 @@ const (
 	GithubTokenKey         = "github.token"
 	GithubWatchIntervalKey = "github.watch_interval"
 
-	DefaultDebugFlag           = false
-	DefaultCacheLimit          = 10000
-	DefaultCacheTTL            = "10m"
 	DefaultServerHost          = "127.0.0.1"
 	DefaultServerPort          = "8080"
 	DefaultDBPath              = "bolt.db"
@@ -43,7 +36,7 @@ func New(name, prefix string) *viper.Viper {
 	cfg.AddConfigPath("/etc")
 	cfg.AddConfigPath(".")
 	if err := cfg.ReadInConfig(); err != nil {
-		log.Println("Unable to read config file - using only ENV")
+		log.WithError(err).Error("Unable to read config file - using only ENV")
 	}
 
 	// add ENV fallback
@@ -51,9 +44,6 @@ func New(name, prefix string) *viper.Viper {
 	cfg.AutomaticEnv()
 
 	// set defaults
-	cfg.SetDefault(DebugKey, DefaultDebugFlag)
-	cfg.SetDefault(CacheLimitKey, DefaultCacheLimit)
-	cfg.SetDefault(CacheTTLKey, DefaultCacheTTL)
 	cfg.SetDefault(APIHostKey, DefaultServerHost)
 	cfg.SetDefault(ServerHostKey, DefaultServerHost)
 	cfg.SetDefault(ServerPortKey, DefaultServerPort)

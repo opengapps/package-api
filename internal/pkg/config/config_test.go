@@ -10,15 +10,18 @@ import (
 
 const (
 	testName   = "config"
-	testPrefix = "FAKE_ETA_TEST"
+	testPrefix = "PACKAGE_API_TEST"
 )
 
 var testConfigKeys = map[string]interface{}{
-	config.DebugKey:      config.DefaultDebugFlag,
-	config.CacheLimitKey: config.DefaultCacheLimit,
-	config.CacheTTLKey:   config.DefaultCacheTTL,
-	config.ServerHostKey: config.DefaultServerHost,
-	config.ServerPortKey: config.DefaultServerPort,
+	config.APIHostKey:             config.DefaultServerHost,
+	config.ServerHostKey:          config.DefaultServerHost,
+	config.ServerPortKey:          config.DefaultServerPort,
+	config.DBPathKey:              config.DefaultDBPath,
+	config.DBTimeoutKey:           config.DefaultDBTimeout,
+	config.DownloadEndpointKey:    config.DefaultDLEndpointPath,
+	config.ListEndpointKey:        config.DefaultListEndpointPath,
+	config.GithubWatchIntervalKey: config.DefaultGithubWatchInterval,
 }
 
 func TestNew(t *testing.T) {

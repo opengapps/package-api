@@ -2,17 +2,16 @@ package packageapi
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/opengapps/package-api/internal/app"
-	"github.com/opengapps/package-api/internal/pkg/cache"
 	"github.com/opengapps/package-api/internal/pkg/config"
 	"github.com/opengapps/package-api/internal/pkg/db"
 
 	"github.com/google/go-github/v28/github"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/xerrors"
 )
@@ -20,19 +19,15 @@ import (
 // Application holds all the services and config
 type Application struct {
 	cfg    *viper.Viper
-	cache  *cache.Cache
 	db     *db.DB
 	server *http.Server
 	gh     *github.Client
 }
 
 // New creates new instance of Application
-func New(cfg *viper.Viper, cache *cache.Cache, storage *db.DB, gh *github.Client) (*Application, error) {
+func New(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Application, error) {
 	if cfg == nil {
 		return nil, xerrors.New("config is nil")
-	}
-	if cache == nil {
-		return nil, xerrors.New("cache is nil")
 	}
 	if storage == nil {
 		return nil, xerrors.New("storage is nil")
@@ -48,7 +43,6 @@ func New(cfg *viper.Viper, cache *cache.Cache, storage *db.DB, gh *github.Client
 	app.PrintInfo(cfg)
 	return &Application{
 		cfg:    cfg,
-		cache:  cache,
 		db:     storage,
 		gh:     gh,
 		server: server,
@@ -73,13 +67,12 @@ func (a *Application) Run() error {
 		handlers.AllowedOrigins([]string{"*"}),
 	)(r)
 
-	log.Printf("Serving at %s", a.server.Addr)
+	log.Warnf("Serving at %s", a.server.Addr)
 	return a.server.ListenAndServe()
 }
 
 // Close stops the Application
 func (a *Application) Close() error {
-	a.cache.Clear()
 	return a.server.Shutdown(context.Background())
 }
 
@@ -98,6 +91,6 @@ func respond(w http.ResponseWriter, contentType string, code int, body []byte) {
 	w.WriteHeader(code)
 	_, err := w.Write(body)
 	if err != nil {
-		log.Println("Unable to write answer:", err)
+		log.WithError(err).Error("Unable to write answer")
 	}
 }
