@@ -1,6 +1,6 @@
 # More info on config here: https://github.com/golangci/golangci-lint#config-file
 run:
-  deadline: 5s
+  deadline: 15s
   issues-exit-code: 1
   tests: true
   skip-dirs:
