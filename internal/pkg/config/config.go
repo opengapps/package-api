@@ -3,6 +3,7 @@ package config
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/xerrors"
 )
 
 // Config keys and default values
@@ -19,6 +20,15 @@ const (
 	GithubTokenKey         = "github.token"
 	GithubWatchIntervalKey = "github.watch_interval"
 
+	RSSNameKey        = "rss.name"
+	RSSDescriptionKey = "rss.description"
+	RSSAuthorKey      = "rss.author"
+	RSSCopyrightKey   = "rss.copyright"
+	RSSCreationTSKey  = "rss.creation_ts"
+	RSSLinkKey        = "rss.link"
+	RSSTitleKey       = "rss.title"
+	RSSContentKey     = "rss.content"
+
 	DefaultServerHost          = "127.0.0.1"
 	DefaultServerPort          = "8080"
 	DefaultHTTPTimeout         = "3s"
@@ -30,8 +40,20 @@ const (
 	DefaultGithubWatchInterval = "1m"
 )
 
+var mandatoryKeys = []string{
+	GithubTokenKey,
+	RSSNameKey,
+	RSSDescriptionKey,
+	RSSAuthorKey,
+	RSSCopyrightKey,
+	RSSCreationTSKey,
+	RSSLinkKey,
+	RSSTitleKey,
+	RSSContentKey,
+}
+
 // New returns new instance of Viper config
-func New(name, prefix string) *viper.Viper {
+func New(name, prefix string) (*viper.Viper, error) {
 	// try to load config from file first
 	cfg := viper.New()
 	cfg.SetConfigName(name)
@@ -41,9 +63,17 @@ func New(name, prefix string) *viper.Viper {
 		log.WithError(err).Error("Unable to read config file - using only ENV")
 	}
 
-	// add ENV fallback
+	// add ENV fallback and watch
 	cfg.SetEnvPrefix(prefix)
 	cfg.AutomaticEnv()
+	cfg.WatchConfig()
+
+	// check mandatory keys
+	for _, key := range mandatoryKeys {
+		if !cfg.IsSet(key) {
+			return nil, xerrors.Errorf("missing mandatory key '%s'", key)
+		}
+	}
 
 	// set defaults
 	cfg.SetDefault(APIHostKey, DefaultServerHost)
@@ -63,5 +93,5 @@ func New(name, prefix string) *viper.Viper {
 		log.Debugf("  %s: %v", k, v)
 	}
 
-	return cfg
+	return cfg, nil
 }

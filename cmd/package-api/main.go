@@ -49,7 +49,10 @@ func main() {
 	log.Info("Initiating the service")
 
 	// init config from ENV
-	cfg := config.New(configName, app.Name)
+	cfg, err := config.New(configName, app.Name)
+	if err != nil {
+		log.WithError(err).Fatal("Unable to init config")
+	}
 
 	// init Github client
 	log.Debug("Creating Github client")
