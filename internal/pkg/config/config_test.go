@@ -1,16 +1,22 @@
 package config_test
 
 import (
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/opengapps/package-api/internal/pkg/config"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
-	testName   = "config"
-	testPrefix = "PACKAGE_API_TEST"
+	testName        = "config"
+	testPrefix      = "PACKAGE_API"
+	testValueString = "test"
+	testValueInt    = "123"
 )
 
 var testConfigKeys = map[string]interface{}{
@@ -25,10 +31,32 @@ var testConfigKeys = map[string]interface{}{
 	config.GithubWatchIntervalKey: config.DefaultGithubWatchInterval,
 }
 
-func TestNew(t *testing.T) {
-	cfg := config.New(testName, testPrefix)
+var testConfigEnvs = map[string]string{
+	config.GithubTokenKey:    testValueString,
+	config.RSSNameKey:        testValueString,
+	config.RSSDescriptionKey: testValueString,
+	config.RSSAuthorKey:      testValueString,
+	config.RSSCopyrightKey:   testValueString,
+	config.RSSCreationTSKey:  testValueInt,
+	config.RSSLinkKey:        testValueString,
+	config.RSSTitleKey:       testValueString,
+	config.RSSContentKey:     testValueString,
+}
 
+func TestNew(t *testing.T) {
+	setupConfigEnv()
+
+	cfg, err := config.New(testName, testPrefix)
+
+	require.NoError(t, err)
 	for testKey, testValue := range testConfigKeys {
 		assert.Equal(t, cfg.Get(testKey), testValue)
+	}
+}
+
+func setupConfigEnv() {
+	log.SetLevel(log.FatalLevel) // ignore config logging for tests
+	for k, v := range testConfigEnvs {
+		os.Setenv(testPrefix+"_"+strings.ToUpper(k), v)
 	}
 }

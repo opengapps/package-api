@@ -61,12 +61,14 @@ func New(name, prefix string) (*viper.Viper, error) {
 	cfg.AddConfigPath(".")
 	if err := cfg.ReadInConfig(); err != nil {
 		log.WithError(err).Error("Unable to read config file - using only ENV")
+	} else {
+		// add watch if parsed OK
+		cfg.WatchConfig()
 	}
 
-	// add ENV fallback and watch
+	// add ENV fallback
 	cfg.SetEnvPrefix(prefix)
 	cfg.AutomaticEnv()
-	cfg.WatchConfig()
 
 	// check mandatory keys
 	for _, key := range mandatoryKeys {
