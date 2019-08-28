@@ -15,3 +15,13 @@ rss = "/rss/{arch}.atom"
 [github]
 token = "YOUR_TOKEN"
 watch_interval = "1m"
+
+[rss]
+name = "Release notes from %s"
+description = "Open GApps package release for %s architecture"
+author = "opengappsbuildbot"
+copyright = "Copyright © 2015-2019 The Open GApps Team"
+creation_ts = 1566816430
+link = "https://sourceforge.net/projects/opengapps/files/%s/%s"
+title = "%s releases of %s"
+content = "Automatically generated builds of %s can be found at %s These builds are provided by The Open GApps Project and are provided under the terms that they can be freely used for personal use only, and are not allowed to be mirrored to the public other than OpenGApps.org"
