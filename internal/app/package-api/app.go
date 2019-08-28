@@ -72,8 +72,8 @@ func (a *Application) Run() error {
 		HandlerFunc(a.dlHandler())
 	r.Name("list").Path(a.cfg.GetString(config.ListEndpointKey)).
 		HandlerFunc(a.listHandler())
-	r.Name("rss").Path(a.cfg.GetString(config.RSSEndpointKey)).
-		HandlerFunc(a.rssHandler())
+	// r.Name("rss").Path(a.cfg.GetString(config.RSSEndpointKey)).
+	// HandlerFunc(a.rssHandler())
 
 	// set handler with middlewares
 	a.server.Handler = withMiddlewares(r)
