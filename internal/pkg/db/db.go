@@ -1,10 +1,12 @@
 package db
 
 import (
+	"bytes"
 	"os"
 	"sort"
 	"time"
 
+	"github.com/opengapps/package-api/internal/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"go.etcd.io/bbolt"
 	"golang.org/x/xerrors"
@@ -24,6 +26,13 @@ var (
 
 	bucketName = []byte("global")
 )
+
+// Record is used to store models.ArchRecord in DB
+type Record struct {
+	models.ArchRecord
+
+	Timestamp int64 `json:"ts"`
+}
 
 // DB describes local BoltDB database
 type DB struct {
@@ -134,6 +143,34 @@ func (db *DB) Get(key string) ([]byte, error) {
 	}
 	log.WithField("key", key).Debug("Got the value")
 	return value, nil
+}
+
+// GetMultipleBySuffix returns keys and non-empty values, for which the key contains the suffix
+// It returns all keys and values from the bucket if the suffix is empty
+func (db *DB) GetMultipleBySuffix(suffix string) ([]string, [][]byte, error) {
+	var (
+		keys   []string
+		values [][]byte
+	)
+	log.WithField("suffix", suffix).Debug("Getting values from DB by suffix")
+	err := db.b.View(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(bucketName)
+		if b == nil {
+			return bbolt.ErrBucketNotFound
+		}
+		return b.ForEach(func(k, v []byte) error {
+			if (suffix == "" || bytes.HasSuffix(k, []byte(suffix))) && v != nil {
+				keys = append(keys, string(k))
+				values = append(values, v)
+			}
+			return nil
+		})
+	})
+	if err != nil {
+		return nil, nil, xerrors.Errorf("unable to get values for suffix '%s' from DB: %w", suffix, err)
+	}
+	log.WithField("suffix", suffix).Debug("Got the values")
+	return keys, values, nil
 }
 
 // Put sets/updates the value in DB by provided bucket and key

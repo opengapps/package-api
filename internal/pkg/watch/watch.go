@@ -88,12 +88,13 @@ func (w *Watcher) checkRelease(ctx context.Context) error {
 		case xerrors.Is(err, db.ErrNilValue), xerrors.Is(err, db.ErrNotFound):
 			// save the new data
 			var data []byte
-			if data, err = json.Marshal(record); err != nil {
-				log.WithError(err).Errorf("Unable to marshal the data for the arch '%s' and date '%s'", arch, record.Date)
+			dbRecord := db.Record{ArchRecord: record, Timestamp: time.Now().Unix()}
+			if data, err = json.Marshal(dbRecord); err != nil {
+				log.WithError(err).Errorf("Unable to marshal the data for the arch '%s' and date '%s'", arch, dbRecord.Date)
 				continue
 			}
 			if err = w.db.Put(key, data); err != nil {
-				log.WithError(err).Errorf("Unable to save the data for the arch '%s' and date '%s'", arch, record.Date)
+				log.WithError(err).Errorf("Unable to save the data for the arch '%s' and date '%s'", arch, dbRecord.Date)
 			}
 		default:
 			return xerrors.Errorf("unable to check DB key: %w", err)
@@ -107,7 +108,7 @@ func addPackageFn(ctx context.Context, gh *github.Client, resp *models.ListRespo
 	return func() error {
 		release, err := link.GetLatestRelease(ctx, gh, arch)
 		if err != nil {
-			return xerrors.Errorf("unable to get latest release: %w", err)
+			return err
 		}
 
 		for _, asset := range release.Assets {

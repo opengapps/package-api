@@ -47,5 +47,5 @@ func logFormatter(_ io.Writer, params handlers.LogFormatterParams) {
 	if params.StatusCode != http.StatusOK {
 		status = http.StatusText(params.StatusCode)
 	}
-	log.WithFields(fields).Info(status)
+	log.WithFields(fields).Debug(status)
 }

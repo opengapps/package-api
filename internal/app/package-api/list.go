@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/opengapps/package-api/internal/pkg/db"
 	"github.com/opengapps/package-api/internal/pkg/models"
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
@@ -17,7 +18,7 @@ func (a *Application) listHandler() http.HandlerFunc {
 			ArchList: make(map[string]models.ArchRecord, 4),
 		}
 
-		// get the releases from the DB
+		// get the release keys from the DB
 		keys, err := a.db.Keys()
 		if err != nil {
 			resp.Error = err.Error()
@@ -26,6 +27,7 @@ func (a *Application) listHandler() http.HandlerFunc {
 		}
 
 		for _, p := range gapps.PlatformValues() {
+			// get the record from the DB and add it to the response
 			key := getLatestArchKey(p.String(), keys)
 			if key == "" {
 				log.Warnf("No releases found for arch '%s'", p)
@@ -39,21 +41,20 @@ func (a *Application) listHandler() http.HandlerFunc {
 				return
 			}
 
-			var record models.ArchRecord
+			var record db.Record
 			if err = json.Unmarshal(data, &record); err != nil {
 				resp.Error = err.Error()
 				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
 				return
 			}
 
-			resp.ArchList[p.String()] = record
+			resp.ArchList[p.String()] = record.ArchRecord
 		}
 
 		if len(resp.ArchList) == 0 {
 			respondJSON(w, http.StatusNoContent, nil)
 			return
 		}
-
 		respondJSON(w, http.StatusOK, resp.ToJSON())
 	}
 }
