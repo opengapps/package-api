@@ -1,4 +1,4 @@
-package packageapi
+package models
 
 import (
 	"encoding/json"
@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"github.com/opengapps/package-api/internal/pkg/link"
 	"golang.org/x/xerrors"
 )
 
+// Public consts
 const (
-	dateOnlyFormat    = "20060102"
-	humanDateTemplate = "%d %s %d"
+	DateOnlyFormat    = "20060102"
+	HumanDateTemplate = "%d %s %d"
 )
 
 // ListResponse is used for the /list endpoint
@@ -59,11 +61,11 @@ func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android
 	defer r.mtx.Unlock()
 
 	// parse date
-	dt, err := time.Parse(dateOnlyFormat, date)
+	dt, err := time.Parse(DateOnlyFormat, date)
 	if err != nil {
 		return xerrors.Errorf("unable to parse date: %w", err)
 	}
-	humandate := fmt.Sprintf(humanDateTemplate, dt.Day(), dt.Month(), dt.Year())
+	humandate := fmt.Sprintf(HumanDateTemplate, dt.Day(), dt.Month(), dt.Year())
 
 	if r.ArchList == nil {
 		r.ArchList = make(map[string]ArchRecord)
@@ -94,9 +96,9 @@ func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android
 func newAPIVariant(date string, p gapps.Platform, a gapps.Android, v gapps.Variant) APIVariant {
 	return APIVariant{
 		Name:         v.String(),
-		ZIP:          formatLink(fieldZIP, date, p, a, v),
-		MD5:          formatLink(fieldMD5, date, p, a, v),
-		VersionInfo:  formatLink(fieldVersionInfo, date, p, a, v),
-		SourceReport: formatLink(fieldSourceReport, date, p, a, v),
+		ZIP:          link.New(link.FieldZIP, date, p, a, v),
+		MD5:          link.New(link.FieldMD5, date, p, a, v),
+		VersionInfo:  link.New(link.FieldVersionInfo, date, p, a, v),
+		SourceReport: link.New(link.FieldSourceReport, date, p, a, v),
 	}
 }

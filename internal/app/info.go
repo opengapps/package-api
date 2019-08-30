@@ -1,9 +1,7 @@
 package app
 
 import (
-	"log"
-
-	"github.com/opengapps/package-api/internal/pkg/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -17,17 +15,15 @@ var (
 	GitBranch = "_"
 )
 
-// PrintInfo logs the inforamtion about the current launched binary if Debug mode is enabled)
+// PrintInfo logs the information about the current launched binary on DEBUG lvl
 func PrintInfo(cfg *viper.Viper) {
-	if cfg.GetBool(config.DebugKey) {
-		log.Print("App info:")
-		log.Printf("  Name: %s", Name)
-		log.Printf("  Version: %s", Version)
-		log.Printf("  Build date: %s", BuildTS)
-		log.Printf("  Go version: v%s", GoVersion)
+	log.Debug("App info:")
+	log.Debugf("  Name: %s", Name)
+	log.Debugf("  Version: %s", Version)
+	log.Debugf("  Build date: %s", BuildTS)
+	log.Debugf("  Go version: v%s", GoVersion)
 
-		log.Print("Git info:")
-		log.Printf("  Tag: %s", GitBranch)
-		log.Printf("  Commit: %s", GitHash)
-	}
+	log.Debug("Git info:")
+	log.Debugf("  Tag: %s", GitBranch)
+	log.Debugf("  Commit: %s", GitHash)
 }
