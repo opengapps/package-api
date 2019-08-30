@@ -55,13 +55,15 @@ func (a *Application) rssHandler() http.HandlerFunc {
 				Href: r.URL.Scheme + a.cfg.GetString(config.APIHostKey) + r.RequestURI,
 			},
 			Author:    &feeds.Author{Name: a.cfg.GetString(config.RSSAuthorKey)},
-			Created:   time.Unix(a.cfg.GetInt64(config.RSSCreationTSKey), 0),
+			Created:   time.Unix(a.cfg.GetInt64(config.RSSCreationTSKey), 0).UTC(),
 			Copyright: a.cfg.GetString(config.RSSCopyrightKey),
 			Items:     make([]*feeds.Item, 0, len(records)),
 		}
 
 		// fill feed items
+		lastUpdated := feed.Created
 		for i, record := range records {
+			timeCreated := time.Unix(record.Timestamp, 0).UTC()
 			link := fmt.Sprintf(a.cfg.GetString(config.RSSLinkKey), archs[i], record.Date)
 			feed.Items = append(feed.Items, &feeds.Item{
 				Title: fmt.Sprintf(a.cfg.GetString(config.RSSTitleKey), archs[i], record.HumanDate),
@@ -70,9 +72,13 @@ func (a *Application) rssHandler() http.HandlerFunc {
 				},
 				Description: fmt.Sprintf(a.cfg.GetString(config.RSSContentKey), record.HumanDate, link),
 				Author:      feed.Author,
-				Created:     time.Unix(record.Timestamp, 0),
+				Created:     timeCreated,
 			})
+			if timeCreated.After(lastUpdated) {
+				lastUpdated = timeCreated
+			}
 		}
+		feed.Updated = lastUpdated
 
 		atom, err := feed.ToAtom()
 		if err != nil {
