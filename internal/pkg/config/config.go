@@ -12,6 +12,7 @@ const (
 	ServerHostKey          = "server_host"
 	ServerPortKey          = "server_port"
 	HTTPTimeoutKey         = "http_timeout"
+	AuthKey                = "auth_key"
 	DBPathKey              = "db.path"
 	DBTimeoutKey           = "db.timeout"
 	DownloadEndpointKey    = "endpoint.download"
@@ -41,6 +42,7 @@ const (
 )
 
 var mandatoryKeys = []string{
+	AuthKey,
 	GithubTokenKey,
 	RSSNameKey,
 	RSSDescriptionKey,

@@ -67,6 +67,7 @@ func (a *Application) Run() error {
 		Methods(http.MethodGet).
 		Subrouter()
 
+	// set normal handlers
 	r.Name("download").Path(a.cfg.GetString(config.DownloadEndpointKey)).
 		Queries(queryArgArch, "", queryArgAPI, "", queryArgVariant, "", queryArgDate, "").
 		HandlerFunc(a.dlHandler())
