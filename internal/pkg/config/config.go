@@ -18,6 +18,7 @@ const (
 	DownloadEndpointKey    = "endpoint.download"
 	ListEndpointKey        = "endpoint.list"
 	RSSEndpointKey         = "endpoint.rss"
+	PkgEndpointKey         = "endpoint.pkg"
 	GithubTokenKey         = "github.token"
 	GithubWatchIntervalKey = "github.watch_interval"
 
@@ -38,6 +39,7 @@ const (
 	DefaultDLEndpointPath      = "/download"
 	DefaultListEndpointPath    = "/list"
 	DefaultRSSEndpointPath     = "/rss/{arch}"
+	DefaultPkgEndpointPath     = "/pkg"
 	DefaultGithubWatchInterval = "1m"
 )
 
@@ -89,6 +91,7 @@ func New(name, prefix string) (*viper.Viper, error) {
 	cfg.SetDefault(DownloadEndpointKey, DefaultDLEndpointPath)
 	cfg.SetDefault(ListEndpointKey, DefaultListEndpointPath)
 	cfg.SetDefault(RSSEndpointKey, DefaultRSSEndpointPath)
+	cfg.SetDefault(PkgEndpointKey, DefaultPkgEndpointPath)
 	cfg.SetDefault(GithubWatchIntervalKey, DefaultGithubWatchInterval)
 
 	// print contents in debug mode

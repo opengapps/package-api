@@ -12,6 +12,7 @@ timeout = "1s"
 download = "/download"
 list = "/list"
 rss = "/rss/{arch}.atom"
+pkg = "/pkg"
 
 [github]
 token = "YOUR_TOKEN"

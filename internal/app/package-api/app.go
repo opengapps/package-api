@@ -76,6 +76,10 @@ func (a *Application) Run() error {
 	r.Name("rss").Path(a.cfg.GetString(config.RSSEndpointKey)).
 		HandlerFunc(a.rssHandler())
 
+	// set auth-covered handlers
+	r.Name("pkg").Path(a.cfg.GetString(config.PkgEndpointKey)).
+		Handler(authMiddleware(a.cfg.GetString(config.AuthKey), a.pkgHandler()))
+
 	// set handler with middlewares
 	a.server.Handler = withMiddlewares(r)
 
@@ -106,4 +110,11 @@ func respond(w http.ResponseWriter, contentType string, code int, body []byte) {
 	if err != nil {
 		log.WithError(err).Error("Unable to write answer")
 	}
+}
+
+func errToBytes(err error) []byte {
+	if err == nil {
+		return nil
+	}
+	return []byte(err.Error())
 }

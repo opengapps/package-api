@@ -23,7 +23,7 @@ func (a *Application) rssHandler() http.HandlerFunc {
 		// get arch from request
 		arch, err := parseRSSRequest(r)
 		if err != nil {
-			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
+			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return
 		}
 
@@ -34,14 +34,14 @@ func (a *Application) rssHandler() http.HandlerFunc {
 		}
 		keys, values, err := a.db.GetMultipleBySuffix(suffix)
 		if err != nil {
-			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
+			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return
 		}
 
 		// get the sorted records and arch list (required for /all)
 		archs, records, err := prepareDBRecords(keys, values)
 		if err != nil {
-			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
+			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return
 		}
 
@@ -82,7 +82,7 @@ func (a *Application) rssHandler() http.HandlerFunc {
 
 		atom, err := feed.ToAtom()
 		if err != nil {
-			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
+			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return
 		}
 		respondXML(w, http.StatusOK, []byte(atom))
