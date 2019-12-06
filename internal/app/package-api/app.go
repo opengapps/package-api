@@ -64,20 +64,23 @@ func (a *Application) Run() error {
 	// init router
 	r := mux.NewRouter().
 		Host(a.cfg.GetString(config.APIHostKey)).
-		Methods(http.MethodGet).
 		Subrouter()
 
 	// set normal handlers
 	r.Name("download").Path(a.cfg.GetString(config.DownloadEndpointKey)).
+		Methods(http.MethodGet).
 		Queries(queryArgArch, "", queryArgAPI, "", queryArgVariant, "", queryArgDate, "").
 		HandlerFunc(a.dlHandler())
 	r.Name("list").Path(a.cfg.GetString(config.ListEndpointKey)).
+		Methods(http.MethodGet).
 		HandlerFunc(a.listHandler())
 	r.Name("rss").Path(a.cfg.GetString(config.RSSEndpointKey)).
+		Methods(http.MethodGet).
 		HandlerFunc(a.rssHandler())
 
 	// set auth-covered handlers
 	r.Name("pkg").Path(a.cfg.GetString(config.PkgEndpointKey)).
+		Methods(http.MethodPost).
 		Handler(authMiddleware(a.cfg.GetString(config.AuthKey), a.pkgHandler()))
 
 	// set handler with middlewares

@@ -5,11 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
 	"github.com/opengapps/package-api/internal/pkg/db"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -42,7 +41,7 @@ func (r *pkgRequest) Validate() error {
 
 type pkgResponse struct {
 	Status string `json:"status,omitempty"`
-	Error  error  `json:"error,omitempty"`
+	Error  string `json:"error,omitempty"`
 }
 
 // ToJSON forms JSON body from a struct, ignoring Marshal error
@@ -59,65 +58,77 @@ func (a *Application) pkgHandler() http.HandlerFunc {
 
 		decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(req); err != nil {
-			resp.Error = err
+			resp.Error = err.Error()
 			respondJSON(w, http.StatusBadRequest, resp.ToJSON())
 			return
 		}
 
 		if err := req.Validate(); err != nil {
-			resp.Error = err
+			resp.Error = err.Error()
 			respondJSON(w, http.StatusBadRequest, resp.ToJSON())
 			return
 		}
 
 		// get the release keys from the DB
-		keys, err := a.db.Keys()
+		allKeys, err := a.db.Keys()
 		if err != nil {
-			resp.Error = err
+			resp.Error = err.Error()
 			respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
 			return
 		}
 
-		var key string
-		for i := range keys {
-			if keys[i] == req.Date {
-				key = req.Date
+		var keys []string
+		for i := range allKeys {
+			if strings.HasPrefix(allKeys[i], req.Date) {
+				keys = append(keys, allKeys[i])
 			}
 		}
-		if key == "" {
-			resp.Error = fmt.Errorf("package with date '%s' not found", req.Date)
+		if len(keys) == 0 {
+			resp.Error = fmt.Sprintf("package with date '%s' was not found", req.Date)
 			respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
 			return
 		}
 
-		for _, p := range gapps.PlatformValues() {
-			// get the record from the DB and add it to the response
-			key := getLatestArchKey(p.String(), keys)
-			if key == "" {
-				log.Warnf("No releases found for arch '%s'", p)
-				continue
-			}
-
+		for _, key := range keys {
 			data, err := a.db.Get(key)
 			if err != nil {
-				resp.Error = err
+				resp.Error = err.Error()
 				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
 				return
 			}
 
 			var record db.Record
 			if err = json.Unmarshal(data, &record); err != nil {
-				resp.Error = err
+				resp.Error = err.Error()
 				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
 				return
 			}
 
-			// work with DB value here
+			switch req.Action {
+			case actionEnable:
+				if record.Disabled {
+					record.Disabled = false
+				}
+			case actionDisable:
+				if !record.Disabled {
+					record.Disabled = true
+				}
+			}
+
+			if data, err = json.Marshal(record); err != nil {
+				resp.Error = err.Error()
+				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
+				return
+			}
+
+			if err = a.db.Put(key, data); err != nil {
+				resp.Error = err.Error()
+				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
+				return
+			}
 		}
 
-		switch req.Action {
-		case actionEnable:
-		case actionDisable:
-		}
+		resp.Status = "OK"
+		respondJSON(w, http.StatusOK, resp.ToJSON())
 	}
 }

@@ -21,7 +21,7 @@ func withMiddlewares(next http.Handler) http.Handler {
 	return handlers.CORS(
 		handlers.AllowedHeaders([]string{"*"}),
 		handlers.AllowedOrigins([]string{"*"}),
-		handlers.AllowedMethods([]string{http.MethodGet}),
+		handlers.AllowedMethods([]string{http.MethodGet, http.MethodPost}),
 	)(
 		handlers.CustomLoggingHandler(
 			os.Stdout,
