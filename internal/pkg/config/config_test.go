@@ -32,6 +32,7 @@ var testConfigKeys = map[string]interface{}{
 }
 
 var testConfigEnvs = map[string]string{
+	config.AuthKey:           testValueString,
 	config.GithubTokenKey:    testValueString,
 	config.RSSNameKey:        testValueString,
 	config.RSSDescriptionKey: testValueString,
