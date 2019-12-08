@@ -1,30 +1,49 @@
 package packageapi
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/handlers"
 	log "github.com/sirupsen/logrus"
 )
 
-func withMiddlewares(h http.Handler) http.Handler {
+const (
+	authHeader = "Authorization"
+	authFormat = "Bearer %s"
+)
+
+func withMiddlewares(next http.Handler) http.Handler {
 	return handlers.CORS(
 		handlers.AllowedHeaders([]string{"*"}),
 		handlers.AllowedOrigins([]string{"*"}),
-		handlers.AllowedMethods([]string{http.MethodGet}),
+		handlers.AllowedMethods([]string{http.MethodGet, http.MethodPost}),
 	)(
 		handlers.CustomLoggingHandler(
 			os.Stdout,
 			handlers.RecoveryHandler(
 				handlers.RecoveryLogger(log.StandardLogger()),
 				handlers.PrintRecoveryStack(true),
-			)(h),
+			)(next),
 			logFormatter,
 		),
 	)
+}
+
+// authMiddleware checks basic authentication header
+func authMiddleware(authKey string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.EqualFold(r.Header.Get(authHeader), fmt.Sprintf(authFormat, authKey)) {
+			respond(w, "", http.StatusUnauthorized, nil)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 // logFormatter impelements handlers.LogFormatter

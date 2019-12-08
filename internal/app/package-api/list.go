@@ -28,24 +28,16 @@ func (a *Application) listHandler() http.HandlerFunc {
 
 		for _, p := range gapps.PlatformValues() {
 			// get the record from the DB and add it to the response
-			key := getLatestArchKey(p.String(), keys)
-			if key == "" {
-				log.Warnf("No releases found for arch '%s'", p)
-				continue
-			}
-
-			data, err := a.db.Get(key)
+			record, err := a.getLatestRecord(p.String(), keys, []string{})
 			if err != nil {
 				resp.Error = err.Error()
 				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
 				return
 			}
 
-			var record db.Record
-			if err = json.Unmarshal(data, &record); err != nil {
-				resp.Error = err.Error()
-				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
-				return
+			if record == nil {
+				log.Warnf("No releases found for arch '%s'", p)
+				continue
 			}
 
 			resp.ArchList[p.String()] = record.ArchRecord
@@ -59,7 +51,30 @@ func (a *Application) listHandler() http.HandlerFunc {
 	}
 }
 
-func getLatestArchKey(arch string, keys []string) string {
+func (a *Application) getLatestRecord(arch string, keys, disabledKeys []string) (*db.Record, error) {
+	key := getLatestArchKey(arch, keys, disabledKeys)
+	if key == "" {
+		return nil, nil
+	}
+
+	data, err := a.db.Get(key)
+	if err != nil {
+		return nil, err
+	}
+
+	var record db.Record
+	if err = json.Unmarshal(data, &record); err != nil {
+		return nil, err
+	}
+
+	if record.Disabled {
+		return a.getLatestRecord(arch, keys, append(disabledKeys, key))
+	}
+
+	return &record, nil
+}
+
+func getLatestArchKey(arch string, keys, disabledKeys []string) string {
 	var result string
 	for _, key := range keys {
 		parts := strings.Split(key, "-") // date-arch
@@ -68,9 +83,18 @@ func getLatestArchKey(arch string, keys []string) string {
 			continue
 		}
 		// latest date by models.DateOnlyFormat is always bigger
-		if parts[1] == arch && key > result {
+		if parts[1] == arch && !isStringInSlice(key, disabledKeys) && key > result {
 			result = key
 		}
 	}
 	return result
+}
+
+func isStringInSlice(s string, ss []string) bool {
+	for i := range ss {
+		if ss[i] == s {
+			return true
+		}
+	}
+	return false
 }

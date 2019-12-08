@@ -23,7 +23,7 @@ func (a *Application) rssHandler() http.HandlerFunc {
 		// get arch from request
 		arch, err := parseRSSRequest(r)
 		if err != nil {
-			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
+			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return
 		}
 
@@ -34,14 +34,14 @@ func (a *Application) rssHandler() http.HandlerFunc {
 		}
 		keys, values, err := a.db.GetMultipleBySuffix(suffix)
 		if err != nil {
-			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
+			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return
 		}
 
 		// get the sorted records and arch list (required for /all)
 		archs, records, err := prepareDBRecords(keys, values)
 		if err != nil {
-			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
+			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return
 		}
 
@@ -82,7 +82,7 @@ func (a *Application) rssHandler() http.HandlerFunc {
 
 		atom, err := feed.ToAtom()
 		if err != nil {
-			respond(w, "", http.StatusInternalServerError, []byte(err.Error()))
+			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return
 		}
 		respondXML(w, http.StatusOK, []byte(atom))
@@ -91,8 +91,8 @@ func (a *Application) rssHandler() http.HandlerFunc {
 
 func prepareDBRecords(keys []string, values [][]byte) ([]string, []db.Record, error) {
 	var err error
-	archs := make([]string, len(values))
-	records := make([]db.Record, len(values))
+	archs := make([]string, 0, len(values))
+	records := make([]db.Record, 0, len(values))
 
 	for i := 0; i < len(values); i++ {
 		record := db.Record{}
@@ -103,8 +103,12 @@ func prepareDBRecords(keys []string, values [][]byte) ([]string, []db.Record, er
 		if len(parts) != 2 {
 			return nil, nil, xerrors.Errorf("unable to parse record for key '%s': bad key", keys[i])
 		}
-		archs[i] = parts[1]
-		records[i] = record
+		// we ignore disabled records
+		if record.Disabled {
+			continue
+		}
+		archs = append(archs, parts[1])
+		records = append(records, record)
 	}
 	return archs, records, nil
 }

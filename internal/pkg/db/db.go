@@ -31,6 +31,7 @@ var (
 type Record struct {
 	models.ArchRecord
 
+	Disabled  bool  `json:"disabled,omitempty"`
 	Timestamp int64 `json:"ts"`
 }
 
