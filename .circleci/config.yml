@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/opengapps/package-api
     steps:
       - checkout
@@ -20,7 +20,7 @@ jobs:
             - /go/pkg/mod/cache/download/
   lint:
     docker:
-      - image: golangci/golangci-lint:v1.17
+      - image: golangci/golangci-lint:v1.23
     working_directory: /go/src/github.com/opengapps/package-api
     steps:
       - checkout
