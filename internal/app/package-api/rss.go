@@ -13,7 +13,6 @@ import (
 	"github.com/gorilla/feeds"
 	"github.com/gorilla/mux"
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
-	"golang.org/x/xerrors"
 )
 
 const archAll = "all"
@@ -97,11 +96,11 @@ func prepareDBRecords(keys []string, values [][]byte) ([]string, []db.Record, er
 	for i := 0; i < len(values); i++ {
 		record := db.Record{}
 		if err = json.Unmarshal(values[i], &record); err != nil {
-			return nil, nil, xerrors.Errorf("unable to parse record for key '%s': %w", keys[i], err)
+			return nil, nil, fmt.Errorf("unable to parse record for key '%s': %w", keys[i], err)
 		}
 		parts := strings.Split(keys[i], "-")
 		if len(parts) != 2 {
-			return nil, nil, xerrors.Errorf("unable to parse record for key '%s': bad key", keys[i])
+			return nil, nil, fmt.Errorf("unable to parse record for key '%s': bad key", keys[i])
 		}
 		// we ignore disabled records
 		if record.Disabled {
@@ -116,7 +115,7 @@ func prepareDBRecords(keys []string, values [][]byte) ([]string, []db.Record, er
 func parseRSSRequest(req *http.Request) (string, error) {
 	arch, ok := mux.Vars(req)[queryArgArch]
 	if !ok {
-		return "", xerrors.Errorf(missingParamErrTemplate, queryArgArch)
+		return "", fmt.Errorf(missingParamErrTemplate, queryArgArch)
 	}
 	if arch == archAll {
 		return archAll, nil
@@ -124,7 +123,7 @@ func parseRSSRequest(req *http.Request) (string, error) {
 
 	platform, err := gapps.PlatformString(arch)
 	if err != nil {
-		return "", xerrors.Errorf("unable to parse '%s' param: '%s' is not a valid architecture", queryArgArch, arch)
+		return "", fmt.Errorf("unable to parse '%s' param: '%s' is not a valid architecture", queryArgArch, arch)
 	}
 	return platform.String(), nil
 }

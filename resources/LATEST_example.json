@@ -1,6 +1,6 @@
 {
-    "arch": "arm",
-    "date": "20190818",
+    "arch": "arm64",
+    "date": "20200122",
     "assets": [
         {
             "api": "4.4",
@@ -100,6 +100,13 @@
                 "super",
                 "aroma",
                 "tvstock"
+            ]
+        },
+        {
+            "api": "10.0",
+            "variants": [
+                "pico",
+                "nano"
             ]
         }
     ]

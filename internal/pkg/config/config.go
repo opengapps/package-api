@@ -1,9 +1,10 @@
 package config
 
 import (
+	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"golang.org/x/xerrors"
 )
 
 // Config keys and default values
@@ -77,7 +78,7 @@ func New(name, prefix string) (*viper.Viper, error) {
 	// check mandatory keys
 	for _, key := range mandatoryKeys {
 		if !cfg.IsSet(key) {
-			return nil, xerrors.Errorf("missing mandatory key '%s'", key)
+			return nil, fmt.Errorf("missing mandatory key '%s'", key)
 		}
 	}
 

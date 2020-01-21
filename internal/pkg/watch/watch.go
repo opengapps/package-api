@@ -3,6 +3,7 @@ package watch
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -12,12 +13,11 @@ import (
 	"github.com/opengapps/package-api/internal/pkg/link"
 	"github.com/opengapps/package-api/internal/pkg/models"
 
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
-	"golang.org/x/xerrors"
 )
 
 // Watcher periodically queries GitHub for the package changes
@@ -30,13 +30,13 @@ type Watcher struct {
 // NewWatcher creates new Github release watcher
 func NewWatcher(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Watcher, error) {
 	if cfg == nil {
-		return nil, xerrors.New("config is nil")
+		return nil, errors.New("config is nil")
 	}
 	if storage == nil {
-		return nil, xerrors.New("storage is nil")
+		return nil, errors.New("storage is nil")
 	}
 	if gh == nil {
-		return nil, xerrors.New("GitHub client is nil")
+		return nil, errors.New("GitHub client is nil")
 	}
 
 	return &Watcher{cfg: cfg, db: storage, gh: gh}, nil
@@ -85,7 +85,7 @@ func (w *Watcher) checkRelease(ctx context.Context) error {
 		case err == nil:
 			// data is already there, continue
 			continue
-		case xerrors.Is(err, db.ErrNilValue), xerrors.Is(err, db.ErrNotFound):
+		case errors.Is(err, db.ErrNilValue), errors.Is(err, db.ErrNotFound):
 			// save the new data
 			var data []byte
 			dbRecord := db.Record{ArchRecord: record, Timestamp: time.Now().Unix()}
@@ -97,7 +97,7 @@ func (w *Watcher) checkRelease(ctx context.Context) error {
 				log.WithError(err).Errorf("Unable to save the data for the arch '%s' and date '%s'", arch, dbRecord.Date)
 			}
 		default:
-			return xerrors.Errorf("unable to check DB key: %w", err)
+			return fmt.Errorf("unable to check DB key: %w", err)
 		}
 	}
 
@@ -115,16 +115,16 @@ func addPackageFn(ctx context.Context, gh *github.Client, resp *models.ListRespo
 			for _, variant := range asset.Variants {
 				pkgAPI, err := gapps.AndroidString(strings.Replace(asset.API, ".", "", -1))
 				if err != nil {
-					return xerrors.Errorf("unable to parse API '%s' in LATEST file for arch '%s': %w", asset.API, arch, err)
+					return fmt.Errorf("unable to parse API '%s' in LATEST file for arch '%s': %w", asset.API, arch, err)
 				}
 
 				pkgVariant, err := gapps.VariantString(variant)
 				if err != nil {
-					return xerrors.Errorf("unable to parse variant '%s' of API '%s' in LATEST file for arch '%s': %w", variant, asset.API, arch, err)
+					return fmt.Errorf("unable to parse variant '%s' of API '%s' in LATEST file for arch '%s': %w", variant, asset.API, arch, err)
 				}
 
 				if err = resp.AddPackage(release.Date, arch, pkgAPI, pkgVariant); err != nil {
-					return xerrors.Errorf("unable to add package for variant '%s' of API '%s' in LATEST file for arch '%s': %w", variant, asset.API, arch, err)
+					return fmt.Errorf("unable to add package for variant '%s' of API '%s' in LATEST file for arch '%s': %w", variant, asset.API, arch, err)
 				}
 			}
 		}

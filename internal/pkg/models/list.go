@@ -8,7 +8,6 @@ import (
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
 	"github.com/opengapps/package-api/internal/pkg/link"
-	"golang.org/x/xerrors"
 )
 
 // Public consts
@@ -63,7 +62,7 @@ func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android
 	// parse date
 	dt, err := time.Parse(DateOnlyFormat, date)
 	if err != nil {
-		return xerrors.Errorf("unable to parse date: %w", err)
+		return fmt.Errorf("unable to parse date: %w", err)
 	}
 	humandate := fmt.Sprintf(HumanDateTemplate, dt.Day(), dt.Month(), dt.Year())
 
