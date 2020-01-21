@@ -2,8 +2,6 @@ package db
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"os"
 	"sort"
 	"time"
@@ -11,6 +9,7 @@ import (
 	"github.com/opengapps/package-api/internal/pkg/models"
 	log "github.com/sirupsen/logrus"
 	"go.etcd.io/bbolt"
+	"golang.org/x/xerrors"
 )
 
 const (
@@ -22,8 +21,8 @@ const (
 
 // Package vars
 var (
-	ErrNotFound = errors.New("key not found")
-	ErrNilValue = errors.New("value is nil")
+	ErrNotFound = xerrors.New("key not found")
+	ErrNilValue = xerrors.New("value is nil")
 
 	bucketName = []byte("global")
 )
@@ -52,7 +51,7 @@ func New(path string, timeout time.Duration) (*DB, error) {
 	}
 	b, err := bbolt.Open(path, openMode, opts)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open DB: %w", err)
+		return nil, xerrors.Errorf("unable to open DB: %w", err)
 	}
 
 	// create global bucket if it doesn't exist yet
@@ -62,7 +61,7 @@ func New(path string, timeout time.Duration) (*DB, error) {
 		return bErr
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to create global bucket: %w", err)
+		return nil, xerrors.Errorf("unable to create global bucket: %w", err)
 	}
 
 	// return the DB
@@ -89,11 +88,11 @@ func (db *DB) Close(delete bool) error {
 	select {
 	case err := <-done:
 		if err != nil {
-			return fmt.Errorf("unable to close DB: %w", err)
+			return xerrors.Errorf("unable to close DB: %w", err)
 		}
 		return nil
 	case <-timer.C:
-		return fmt.Errorf("unable to close DB: %w", bbolt.ErrTimeout)
+		return xerrors.Errorf("unable to close DB: %w", bbolt.ErrTimeout)
 	}
 }
 
@@ -114,7 +113,7 @@ func (db *DB) Keys() ([]string, error) {
 		})
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to get the list of keys from DB: %w", err)
+		return nil, xerrors.Errorf("unable to get the list of keys from DB: %w", err)
 	}
 	log.Debug("Got the keys")
 	sort.Strings(keys)
@@ -141,7 +140,7 @@ func (db *DB) Get(key string) ([]byte, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to get value for key '%s' from DB: %w", key, err)
+		return nil, xerrors.Errorf("unable to get value for key '%s' from DB: %w", key, err)
 	}
 	log.WithField("key", key).Debug("Got the value")
 	return value, nil
@@ -169,7 +168,7 @@ func (db *DB) GetMultipleBySuffix(suffix string) ([]string, [][]byte, error) {
 		})
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to get values for suffix '%s' from DB: %w", suffix, err)
+		return nil, nil, xerrors.Errorf("unable to get values for suffix '%s' from DB: %w", suffix, err)
 	}
 	log.WithField("suffix", suffix).Debug("Got the values")
 	return keys, values, nil
@@ -186,7 +185,7 @@ func (db *DB) Put(key string, val []byte) error {
 		return b.Put([]byte(key), val)
 	})
 	if err != nil {
-		return fmt.Errorf("unable to put value for key '%s' to DB: %w", key, err)
+		return xerrors.Errorf("unable to put value for key '%s' to DB: %w", key, err)
 	}
 	log.WithField("key", key).Debug("Saved successfully")
 	return nil
@@ -203,7 +202,7 @@ func (db *DB) Delete(key string) error {
 		return b.Delete([]byte(key))
 	})
 	if err != nil {
-		return fmt.Errorf("unable to delete value for key '%s' from DB: %w", key, err)
+		return xerrors.Errorf("unable to delete value for key '%s' from DB: %w", key, err)
 	}
 	log.WithField("key", key).Debug("Deleted successfully")
 	return nil
@@ -216,7 +215,7 @@ func (db *DB) Purge() error {
 		return tx.DeleteBucket(bucketName)
 	})
 	if err != nil {
-		return fmt.Errorf("unable to purge global bucket from DB: %w", err)
+		return xerrors.Errorf("unable to purge global bucket from DB: %w", err)
 	}
 	return nil
 }

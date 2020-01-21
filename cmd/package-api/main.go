@@ -14,7 +14,7 @@ import (
 	"github.com/opengapps/package-api/internal/pkg/db"
 	"github.com/opengapps/package-api/internal/pkg/watch"
 
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v28/github"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"golang.org/x/oauth2"
