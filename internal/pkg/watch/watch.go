@@ -30,13 +30,13 @@ type Watcher struct {
 // NewWatcher creates new Github release watcher
 func NewWatcher(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Watcher, error) {
 	if cfg == nil {
-		return nil, errors.New("config is nil")
+		return nil, errors.New("passed config is nil")
 	}
 	if storage == nil {
-		return nil, errors.New("storage is nil")
+		return nil, errors.New("passed storage is nil")
 	}
 	if gh == nil {
-		return nil, errors.New("GitHub client is nil")
+		return nil, errors.New("passed GitHub client is nil")
 	}
 
 	return &Watcher{cfg: cfg, db: storage, gh: gh}, nil

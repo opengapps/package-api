@@ -2,8 +2,8 @@ package packageapi
 
 import (
 	"context"
-	"net/http"
 	"errors"
+	"net/http"
 
 	"github.com/opengapps/package-api/internal/app"
 	"github.com/opengapps/package-api/internal/pkg/config"
@@ -35,13 +35,13 @@ type Application struct {
 // New creates new instance of Application
 func New(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Application, error) {
 	if cfg == nil {
-		return nil, errors.New("config is nil")
+		return nil, errors.New("passed config is nil")
 	}
 	if storage == nil {
-		return nil, errors.New("storage is nil")
+		return nil, errors.New("passed storage is nil")
 	}
 	if gh == nil {
-		return nil, errors.New("GitHub client is nil")
+		return nil, errors.New("passed GitHub client is nil")
 	}
 
 	server := &http.Server{
