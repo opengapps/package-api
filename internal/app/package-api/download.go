@@ -10,7 +10,6 @@ import (
 	"github.com/opengapps/package-api/internal/pkg/models"
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
-	"golang.org/x/xerrors"
 )
 
 const mirrorTemplate = "?r=&ts=%d&use_mirror=autoselect"
@@ -52,23 +51,23 @@ func parseDLRequest(req *http.Request) ([]string, error) {
 
 	arch := queryArgs.Get(queryArgArch)
 	if arch == "" {
-		return nil, xerrors.Errorf(missingParamErrTemplate, queryArgArch)
+		return nil, fmt.Errorf(missingParamErrTemplate, queryArgArch)
 	}
 
 	api := queryArgs.Get(queryArgAPI)
 	if api == "" {
-		return nil, xerrors.Errorf(missingParamErrTemplate, queryArgAPI)
+		return nil, fmt.Errorf(missingParamErrTemplate, queryArgAPI)
 	}
 	api = strings.Replace(api, ".", "", 1)
 
 	variant := queryArgs.Get(queryArgVariant)
 	if variant == "" {
-		return nil, xerrors.Errorf(missingParamErrTemplate, queryArgVariant)
+		return nil, fmt.Errorf(missingParamErrTemplate, queryArgVariant)
 	}
 
 	date := queryArgs.Get(queryArgDate)
 	if date == "" {
-		return nil, xerrors.Errorf(missingParamErrTemplate, queryArgDate)
+		return nil, fmt.Errorf(missingParamErrTemplate, queryArgDate)
 	}
 
 	return []string{arch, api, variant, date}, nil

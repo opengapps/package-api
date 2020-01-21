@@ -3,16 +3,16 @@ package packageapi
 import (
 	"context"
 	"net/http"
+	"errors"
 
 	"github.com/opengapps/package-api/internal/app"
 	"github.com/opengapps/package-api/internal/pkg/config"
 	"github.com/opengapps/package-api/internal/pkg/db"
 
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v29/github"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -35,13 +35,13 @@ type Application struct {
 // New creates new instance of Application
 func New(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Application, error) {
 	if cfg == nil {
-		return nil, xerrors.New("config is nil")
+		return nil, errors.New("config is nil")
 	}
 	if storage == nil {
-		return nil, xerrors.New("storage is nil")
+		return nil, errors.New("storage is nil")
 	}
 	if gh == nil {
-		return nil, xerrors.New("GitHub client is nil")
+		return nil, errors.New("GitHub client is nil")
 	}
 
 	server := &http.Server{
