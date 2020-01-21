@@ -35,17 +35,17 @@ type ReleaseAsset struct {
 func GetLatestRelease(ctx context.Context, gh *github.Client, arch gapps.Platform) (*LatestRelease, error) {
 	req, err := gh.NewRequest(http.MethodGet, releaseURLMap[arch], nil)
 	if err != nil {
-		return nil, xfmt.Errorf("unable to create request for the LATEST file for arch '%s': %w", arch, err)
+		return nil, fmt.Errorf("unable to create request for the LATEST file for arch '%s': %w", arch, err)
 	}
 
 	var release LatestRelease
 	resp, err := gh.Do(ctx, req, &release)
 	if err != nil {
-		return nil, xfmt.Errorf("unable to acquire LATEST file for arch '%s': %w", arch, err)
+		return nil, fmt.Errorf("unable to acquire LATEST file for arch '%s': %w", arch, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, xfmt.Errorf("unable to acquire LATEST file for arch '%s': got response '%s'", arch, resp.Status)
+		return nil, fmt.Errorf("unable to acquire LATEST file for arch '%s': got response '%s'", arch, resp.Status)
 	}
 
 	return &release, nil
