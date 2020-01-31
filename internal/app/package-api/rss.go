@@ -45,13 +45,18 @@ func (a *Application) rssHandler() http.HandlerFunc {
 		}
 
 		// prepare and fill the feed
+		scheme := "http://"
+		if r.TLS != nil {
+			scheme = "https://"
+		}
 		feed := &feeds.Feed{
 			Title:       fmt.Sprintf(a.cfg.GetString(config.RSSNameKey), arch),
+			Id:          scheme + a.cfg.GetString(config.APIHostKey) + r.RequestURI,
 			Description: fmt.Sprintf(a.cfg.GetString(config.RSSDescriptionKey), arch),
 			Link: &feeds.Link{
 				Type: "application/atom+xml",
 				Rel:  "self",
-				Href: r.URL.Scheme + a.cfg.GetString(config.APIHostKey) + r.RequestURI,
+				Href: scheme + a.cfg.GetString(config.APIHostKey) + r.RequestURI,
 			},
 			Author:    &feeds.Author{Name: a.cfg.GetString(config.RSSAuthorKey)},
 			Created:   time.Unix(a.cfg.GetInt64(config.RSSCreationTSKey), 0).UTC(),
@@ -61,15 +66,19 @@ func (a *Application) rssHandler() http.HandlerFunc {
 
 		// fill feed items
 		lastUpdated := feed.Created
-		for i, record := range records {
-			timeCreated := time.Unix(record.Timestamp, 0).UTC()
-			link := fmt.Sprintf(a.cfg.GetString(config.RSSLinkKey), archs[i], record.Date)
+		firstDay := time.Now().AddDate(0, -a.cfg.GetInt(config.RSSHistoryLengthKey), 0).UTC()
+		for i := len(records) - 1; i >= 0; i-- {
+			timeCreated := time.Unix(records[i].Timestamp, 0).UTC()
+			if timeCreated.Before(firstDay) {
+				break // we show only last 'RSSHistoryLength' months of data
+			}
+			link := fmt.Sprintf(a.cfg.GetString(config.RSSLinkKey), archs[i], records[i].Date)
 			feed.Items = append(feed.Items, &feeds.Item{
-				Title: fmt.Sprintf(a.cfg.GetString(config.RSSTitleKey), archs[i], record.HumanDate),
+				Title: fmt.Sprintf(a.cfg.GetString(config.RSSTitleKey), archs[i], records[i].HumanDate),
 				Link: &feeds.Link{
 					Href: link,
 				},
-				Description: fmt.Sprintf(a.cfg.GetString(config.RSSContentKey), record.HumanDate, link),
+				Description: fmt.Sprintf(a.cfg.GetString(config.RSSContentKey), records[i].HumanDate, link),
 				Author:      feed.Author,
 				Created:     timeCreated,
 			})

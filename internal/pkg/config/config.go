@@ -23,14 +23,15 @@ const (
 	GithubTokenKey         = "github.token"
 	GithubWatchIntervalKey = "github.watch_interval"
 
-	RSSNameKey        = "rss.name"
-	RSSDescriptionKey = "rss.description"
-	RSSAuthorKey      = "rss.author"
-	RSSCopyrightKey   = "rss.copyright"
-	RSSCreationTSKey  = "rss.creation_ts"
-	RSSLinkKey        = "rss.link"
-	RSSTitleKey       = "rss.title"
-	RSSContentKey     = "rss.content"
+	RSSNameKey          = "rss.name"
+	RSSDescriptionKey   = "rss.description"
+	RSSAuthorKey        = "rss.author"
+	RSSCopyrightKey     = "rss.copyright"
+	RSSCreationTSKey    = "rss.creation_ts"
+	RSSLinkKey          = "rss.link"
+	RSSTitleKey         = "rss.title"
+	RSSContentKey       = "rss.content"
+	RSSHistoryLengthKey = "rss.history_length"
 
 	DefaultServerHost          = "127.0.0.1"
 	DefaultServerPort          = "8080"
@@ -42,6 +43,7 @@ const (
 	DefaultRSSEndpointPath     = "/rss/{arch}"
 	DefaultPkgEndpointPath     = "/pkg"
 	DefaultGithubWatchInterval = "1m"
+	DefaultRSSHistoryLength    = 3
 )
 
 var mandatoryKeys = []string{
@@ -94,6 +96,7 @@ func New(name, prefix string) (*viper.Viper, error) {
 	cfg.SetDefault(RSSEndpointKey, DefaultRSSEndpointPath)
 	cfg.SetDefault(PkgEndpointKey, DefaultPkgEndpointPath)
 	cfg.SetDefault(GithubWatchIntervalKey, DefaultGithubWatchInterval)
+	cfg.SetDefault(RSSHistoryLengthKey, DefaultRSSHistoryLength)
 
 	// print contents in debug mode
 	log.Debug("Using config:")

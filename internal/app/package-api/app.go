@@ -106,11 +106,11 @@ func respondXML(w http.ResponseWriter, code int, body []byte) {
 
 func respond(w http.ResponseWriter, contentType string, code int, body []byte) {
 	if contentType != "" {
-		w.Header().Add("Content-Type", contentType)
+		w.Header().Set("Content-Type", contentType)
 	}
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
-	_, err := w.Write(body)
-	if err != nil {
+	if _, err := w.Write(body); err != nil {
 		log.WithError(err).Error("Unable to write answer")
 	}
 }

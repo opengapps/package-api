@@ -29,6 +29,7 @@ var testConfigKeys = map[string]interface{}{
 	config.ListEndpointKey:        config.DefaultListEndpointPath,
 	config.RSSEndpointKey:         config.DefaultRSSEndpointPath,
 	config.GithubWatchIntervalKey: config.DefaultGithubWatchInterval,
+	config.RSSHistoryLengthKey:    config.DefaultRSSHistoryLength,
 }
 
 var testConfigEnvs = map[string]string{

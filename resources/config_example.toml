@@ -27,3 +27,4 @@ creation_ts = 1566816430
 link = "https://sourceforge.net/projects/opengapps/files/%s/%s"
 title = "%s releases of %s"
 content = "Automatically generated builds of %s can be found at %s These builds are provided by The Open GApps Project and are provided under the terms that they can be freely used for personal use only, and are not allowed to be mirrored to the public other than OpenGApps.org"
+history_length = 3 # in months

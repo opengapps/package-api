@@ -37,7 +37,7 @@ func init() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(logLevel)
-	log.Debug("Enabing debug logging")
+	log.Debug("Enabling debug logging")
 
 	if configName == "" {
 		pflag.PrintDefaults()
