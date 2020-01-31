@@ -13,6 +13,7 @@ const (
 	ServerHostKey          = "server_host"
 	ServerPortKey          = "server_port"
 	HTTPTimeoutKey         = "http_timeout"
+	HTTPSRedirectKey       = "https_redirect"
 	AuthKey                = "auth_key"
 	DBPathKey              = "db.path"
 	DBTimeoutKey           = "db.timeout"
@@ -36,6 +37,7 @@ const (
 	DefaultServerHost          = "127.0.0.1"
 	DefaultServerPort          = "8080"
 	DefaultHTTPTimeout         = "3s"
+	DefaultHTTPSRedirect       = false
 	DefaultDBPath              = "bolt.db"
 	DefaultDBTimeout           = "1s"
 	DefaultDLEndpointPath      = "/download"
@@ -89,6 +91,7 @@ func New(name, prefix string) (*viper.Viper, error) {
 	cfg.SetDefault(ServerHostKey, DefaultServerHost)
 	cfg.SetDefault(ServerPortKey, DefaultServerPort)
 	cfg.SetDefault(HTTPTimeoutKey, DefaultHTTPTimeout)
+	cfg.SetDefault(HTTPSRedirectKey, DefaultHTTPSRedirect)
 	cfg.SetDefault(DBPathKey, DefaultDBPath)
 	cfg.SetDefault(DBTimeoutKey, DefaultDBTimeout)
 	cfg.SetDefault(DownloadEndpointKey, DefaultDLEndpointPath)

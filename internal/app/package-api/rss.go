@@ -46,7 +46,7 @@ func (a *Application) rssHandler() http.HandlerFunc {
 
 		// prepare and fill the feed
 		scheme := "http://"
-		if r.TLS != nil {
+		if r.TLS != nil || a.cfg.GetBool(config.HTTPSRedirectKey) {
 			scheme = "https://"
 		}
 		feed := &feeds.Feed{
