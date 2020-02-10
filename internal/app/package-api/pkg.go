@@ -3,10 +3,11 @@ package packageapi
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
 
 	"github.com/opengapps/package-api/internal/pkg/db"
 )
@@ -18,8 +19,9 @@ const (
 )
 
 type pkgRequest struct {
-	Action string `json:"action"`
-	Date   string `json:"date"`
+	Action   string `json:"action"`
+	Platform string `json:"platform,omitempty"`
+	Date     string `json:"date"`
 }
 
 // Validate checks if the package request fields are valid
@@ -30,6 +32,12 @@ func (r *pkgRequest) Validate() error {
 
 	if r.Action != actionEnable && r.Action != actionDisable {
 		return errors.New("bad Action value")
+	}
+
+	if r.Platform != "" {
+		if _, err := gapps.PlatformString(r.Platform); err != nil {
+			return err
+		}
 	}
 
 	if _, err := time.Parse(gappsDateFormat, r.Date); err != nil {
@@ -79,12 +87,16 @@ func (a *Application) pkgHandler() http.HandlerFunc {
 
 		var keys []string
 		for i := range allKeys {
-			if strings.HasPrefix(allKeys[i], req.Date) {
+			prefix := req.Date
+			if req.Platform != "" {
+				prefix += "-" + req.Platform
+			}
+			if strings.HasPrefix(allKeys[i], prefix) {
 				keys = append(keys, allKeys[i])
 			}
 		}
 		if len(keys) == 0 {
-			resp.Error = fmt.Sprintf("package with date '%s' was not found", req.Date)
+			resp.Error = "package with such date was not found"
 			respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
 			return
 		}
