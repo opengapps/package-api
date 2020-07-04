@@ -9,7 +9,7 @@ import (
 	"github.com/opengapps/package-api/internal/pkg/config"
 	"github.com/opengapps/package-api/internal/pkg/db"
 
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v32/github"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

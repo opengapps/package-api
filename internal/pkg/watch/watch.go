@@ -13,7 +13,7 @@ import (
 	"github.com/opengapps/package-api/internal/pkg/link"
 	"github.com/opengapps/package-api/internal/pkg/models"
 
-	"github.com/google/go-github/v29/github"
+	"github.com/google/go-github/v32/github"
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
