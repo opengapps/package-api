@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/opengapps/package-api/internal/pkg/link"
 	"github.com/opengapps/package-api/internal/pkg/models"
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
@@ -14,7 +13,7 @@ import (
 
 const mirrorTemplate = "?r=&ts=%d&use_mirror=autoselect"
 
-func (a *Application) dlHandler() http.HandlerFunc {
+func (a *application) dlHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var resp models.DownloadResponse
 
@@ -34,9 +33,9 @@ func (a *Application) dlHandler() http.HandlerFunc {
 		}
 
 		now := time.Now().Unix()
-		for f := range link.TemplateMap {
-			url := link.New(f, date, platform, android, variant)
-			if f != link.FieldZIPMirrors {
+		for f := range models.TemplateMap {
+			url := models.NewDownloadLink(f, date, platform, android, variant)
+			if f != models.FieldZIPMirrors {
 				url += fmt.Sprintf(mirrorTemplate, now)
 			}
 			resp.SetField(f, url)

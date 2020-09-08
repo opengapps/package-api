@@ -12,14 +12,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (a *Application) listHandler() http.HandlerFunc {
+func (a *application) listHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp := models.ListResponse{
 			ArchList: make(map[string]models.ArchRecord, 4),
 		}
 
 		// get the release keys from the DB
-		keys, err := a.db.Keys()
+		keys, err := a.storage.Keys()
 		if err != nil {
 			resp.Error = err.Error()
 			respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
@@ -51,13 +51,13 @@ func (a *Application) listHandler() http.HandlerFunc {
 	}
 }
 
-func (a *Application) getLatestRecord(arch string, keys, disabledKeys []string) (*db.Record, error) {
+func (a *application) getLatestRecord(arch string, keys, disabledKeys []string) (*db.Record, error) {
 	key := getLatestArchKey(arch, keys, disabledKeys)
 	if key == "" {
 		return nil, nil
 	}
 
-	data, err := a.db.Get(key)
+	data, err := a.storage.Get(key)
 	if err != nil {
 		return nil, err
 	}

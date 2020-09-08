@@ -12,12 +12,10 @@ import (
 	packageapi "github.com/opengapps/package-api/internal/app/package-api"
 	"github.com/opengapps/package-api/internal/pkg/config"
 	"github.com/opengapps/package-api/internal/pkg/db"
-	"github.com/opengapps/package-api/internal/pkg/watch"
+	"github.com/opengapps/package-api/pkg/github"
 
-	"github.com/google/go-github/v32/github"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
-	"golang.org/x/oauth2"
 )
 
 var configName string
@@ -47,22 +45,14 @@ func init() {
 
 func main() {
 	log.Info("Initiating the service")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// init config from ENV
 	cfg, err := config.New(configName, app.Name)
 	if err != nil {
 		log.WithError(err).Fatal("Unable to init config")
 	}
-
-	// init Github client
-	log.Debug("Creating Github client")
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: cfg.GetString(config.GithubTokenKey)},
-	)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	tc := oauth2.NewClient(ctx, ts)
-	gh := github.NewClient(tc)
 
 	// init storage
 	log.Debug("Initiating DB")
@@ -71,17 +61,24 @@ func main() {
 		log.WithError(err).Fatal("Unable to init storage")
 	}
 
-	// create the watcher
-	log.Debug("Initiating GitHub watcher")
-	watcher, err := watch.NewWatcher(cfg, storage, gh)
+	// init Github client
+	log.Debug("Creating Github client")
+	githubClient, err := github.NewClient(
+		ctx,
+		github.WithConfig(cfg),
+		github.WithStorage(storage),
+	)
 	if err != nil {
-		log.WithError(err).Fatal("Unable to init watcher")
+		log.WithError(err).Fatal("Unable to init Github client")
 	}
-	go watcher.Launch(ctx)
+	go githubClient.Watch(ctx)
 
 	// create the server
 	log.Debug("Creating the app server")
-	a, err := packageapi.New(cfg, storage, gh)
+	a, err := packageapi.New(
+		packageapi.WithConfig(cfg),
+		packageapi.WithStorage(storage),
+	)
 	if err != nil {
 		log.WithError(err).Fatal("Unable to init application")
 	}

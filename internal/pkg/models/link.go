@@ -1,4 +1,4 @@
-package link
+package models
 
 import (
 	"fmt"
@@ -13,6 +13,7 @@ const (
 	FieldMD5          = "MD5"
 	FieldVersionInfo  = "VersionInfo"
 	FieldSourceReport = "SourceReport"
+	FieldError        = "Error"
 )
 
 const (
@@ -35,8 +36,8 @@ var TemplateMap = map[string]string{
 	FieldSourceReport: reportTemplate,
 }
 
-// New returns a download link per provided parameters
-func New(field, date string, p gapps.Platform, a gapps.Android, v gapps.Variant) string {
+// NewDownloadLink returns a download link per provided parameters
+func NewDownloadLink(field, date string, p gapps.Platform, a gapps.Android, v gapps.Variant) string {
 	switch field {
 	case FieldZIPMirrors:
 		filename := fmt.Sprintf(TemplateMap[field], p, a.HumanString(), v, date)

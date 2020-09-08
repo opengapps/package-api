@@ -17,7 +17,7 @@ import (
 
 const archAll = "all"
 
-func (a *Application) rssHandler() http.HandlerFunc {
+func (a *application) rssHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// get arch from request
 		arch, err := parseRSSRequest(r)
@@ -31,7 +31,7 @@ func (a *Application) rssHandler() http.HandlerFunc {
 		if arch != archAll {
 			suffix = arch
 		}
-		keys, values, err := a.db.GetMultipleBySuffix(suffix)
+		keys, values, err := a.storage.GetMultipleBySuffix(suffix)
 		if err != nil {
 			respond(w, "", http.StatusInternalServerError, errToBytes(err))
 			return

@@ -3,13 +3,12 @@ package packageapi
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/opengapps/package-api/internal/app"
 	"github.com/opengapps/package-api/internal/pkg/config"
-	"github.com/opengapps/package-api/internal/pkg/db"
 
-	"github.com/google/go-github/v32/github"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -24,43 +23,39 @@ const (
 	queryArgDate    = "date"
 )
 
-// Application holds all the services and config
-type Application struct {
-	cfg    *viper.Viper
-	db     *db.DB
-	server *http.Server
-	gh     *github.Client
+type application struct {
+	cfg     *viper.Viper
+	server  *http.Server
+	storage Storage
 }
 
 // New creates new instance of Application
-func New(cfg *viper.Viper, storage *db.DB, gh *github.Client) (*Application, error) {
-	if cfg == nil {
+func New(opts ...Option) (*application, error) {
+	a := &application{}
+	for _, opt := range opts {
+		if err := opt(a); err != nil {
+			return nil, fmt.Errorf("unable to create client: %w", err)
+		}
+	}
+	if a.cfg == nil {
 		return nil, errors.New("passed config is nil")
 	}
-	if storage == nil {
+	if a.storage == nil {
 		return nil, errors.New("passed storage is nil")
 	}
-	if gh == nil {
-		return nil, errors.New("passed GitHub client is nil")
-	}
 
-	server := &http.Server{
-		Addr:         cfg.GetString(config.ServerHostKey) + ":" + cfg.GetString(config.ServerPortKey),
-		ReadTimeout:  cfg.GetDuration(config.HTTPTimeoutKey),
-		WriteTimeout: cfg.GetDuration(config.HTTPTimeoutKey),
+	a.server = &http.Server{
+		Addr:         a.cfg.GetString(config.ServerHostKey) + ":" + a.cfg.GetString(config.ServerPortKey),
+		ReadTimeout:  a.cfg.GetDuration(config.HTTPTimeoutKey),
+		WriteTimeout: a.cfg.GetDuration(config.HTTPTimeoutKey),
 	}
+	app.PrintInfo(a.cfg)
 
-	app.PrintInfo(cfg)
-	return &Application{
-		cfg:    cfg,
-		db:     storage,
-		gh:     gh,
-		server: server,
-	}, nil
+	return a, nil
 }
 
 // Run launches the Application
-func (a *Application) Run() error {
+func (a *application) Run() error {
 	// init router
 	r := mux.NewRouter().
 		Host(a.cfg.GetString(config.APIHostKey)).
@@ -92,7 +87,7 @@ func (a *Application) Run() error {
 }
 
 // Close stops the Application
-func (a *Application) Close() error {
+func (a *application) Close() error {
 	return a.server.Shutdown(context.Background())
 }
 

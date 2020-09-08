@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
-	"github.com/opengapps/package-api/internal/pkg/link"
 )
 
 // Public consts
@@ -85,19 +84,20 @@ func (r *ListResponse) AddPackage(date string, p gapps.Platform, a gapps.Android
 	}
 	apiRecord := archRecord.APIList[a.HumanString()]
 
-	apiRecord.VariantList = append(apiRecord.VariantList, newAPIVariant(date, p, a, v))
+	apiRecord.VariantList = append(apiRecord.VariantList, NewAPIVariant(date, p, a, v))
 	archRecord.APIList[a.HumanString()] = apiRecord
 	r.ArchList[p.String()] = archRecord
 
 	return nil
 }
 
-func newAPIVariant(date string, p gapps.Platform, a gapps.Android, v gapps.Variant) APIVariant {
+// NewAPIVariant creates and prepares new APIVariant
+func NewAPIVariant(date string, p gapps.Platform, a gapps.Android, v gapps.Variant) APIVariant {
 	return APIVariant{
 		Name:         v.String(),
-		ZIP:          link.New(link.FieldZIP, date, p, a, v),
-		MD5:          link.New(link.FieldMD5, date, p, a, v),
-		VersionInfo:  link.New(link.FieldVersionInfo, date, p, a, v),
-		SourceReport: link.New(link.FieldSourceReport, date, p, a, v),
+		ZIP:          NewDownloadLink(FieldZIP, date, p, a, v),
+		MD5:          NewDownloadLink(FieldMD5, date, p, a, v),
+		VersionInfo:  NewDownloadLink(FieldVersionInfo, date, p, a, v),
+		SourceReport: NewDownloadLink(FieldSourceReport, date, p, a, v),
 	}
 }

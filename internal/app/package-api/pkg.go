@@ -58,7 +58,7 @@ func (r *pkgResponse) ToJSON() []byte {
 	return body
 }
 
-func (a *Application) pkgHandler() http.HandlerFunc {
+func (a *application) pkgHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// unmarshal and validate request
 		req := &pkgRequest{}
@@ -78,7 +78,7 @@ func (a *Application) pkgHandler() http.HandlerFunc {
 		}
 
 		// get the release keys from the DB
-		allKeys, err := a.db.Keys()
+		allKeys, err := a.storage.Keys()
 		if err != nil {
 			resp.Error = err.Error()
 			respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
@@ -102,7 +102,7 @@ func (a *Application) pkgHandler() http.HandlerFunc {
 		}
 
 		for _, key := range keys {
-			data, err := a.db.Get(key)
+			data, err := a.storage.Get(key)
 			if err != nil {
 				resp.Error = err.Error()
 				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
@@ -133,7 +133,7 @@ func (a *Application) pkgHandler() http.HandlerFunc {
 				return
 			}
 
-			if err = a.db.Put(key, data); err != nil {
+			if err = a.storage.Put(key, data); err != nil {
 				resp.Error = err.Error()
 				respondJSON(w, http.StatusInternalServerError, resp.ToJSON())
 				return
