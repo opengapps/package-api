@@ -10,11 +10,12 @@ import (
 	"time"
 
 	"github.com/google/go-github/v37/github"
-	"github.com/opengapps/package-api/pkg/gapps"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/opengapps/package-api/pkg/gapps"
 
 	"github.com/opengapps/package-api/internal/pkg/config"
 	"github.com/opengapps/package-api/internal/pkg/db"
@@ -43,14 +44,14 @@ func NewClient(ctx context.Context, opts ...Option) (*client, error) {
 	if c.storage == nil {
 		return nil, errors.New("storage is nil")
 	}
-	if c.client == nil {
-		return nil, errors.New("client for Github is nil")
-	}
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: c.cfg.GetString(config.GithubTokenKey)},
 	)
 	c.client = github.NewClient(oauth2.NewClient(ctx, ts))
+	if c.client == nil {
+		return nil, errors.New("client for Github is nil")
+	}
 
 	return c, nil
 }
