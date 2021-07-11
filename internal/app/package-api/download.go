@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/opengapps/package-api/internal/pkg/models"
-
-	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"github.com/opengapps/package-api/pkg/gapps"
 )
 
 const mirrorTemplate = "?r=&ts=%d&use_mirror=autoselect"

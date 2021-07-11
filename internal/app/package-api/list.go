@@ -7,13 +7,12 @@ import (
 
 	"github.com/opengapps/package-api/internal/pkg/db"
 	"github.com/opengapps/package-api/internal/pkg/models"
-
-	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"github.com/opengapps/package-api/pkg/gapps"
 	log "github.com/sirupsen/logrus"
 )
 
 func (a *application) listHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		resp := models.ListResponse{
 			ArchList: make(map[string]models.ArchRecord, 4),
 		}

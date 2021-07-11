@@ -20,8 +20,6 @@ output:
 linters-settings:
   govet:
     check-shadowing: true
-  golint:
-    min-confidence: 0
   dupl:
     threshold: 100
   goconst:
@@ -31,7 +29,7 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - golint
+    - revive
     - govet
     - errcheck
     - deadcode
@@ -51,7 +49,7 @@ issues:
     # _ instead of err checks
     - G104
     # for "public interface + private struct implementation" cases only!
-    - exported func * returns unexported type *, which can be annoying to use
+    - exported func .* returns unexported type .*, which can be annoying to use
     # can be removed in the development phase
     # - (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
     # not for the active development - can be removed in the stable phase

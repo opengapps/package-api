@@ -3,7 +3,7 @@ package models
 import (
 	"fmt"
 
-	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"github.com/opengapps/package-api/pkg/gapps"
 )
 
 // Public consts

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"github.com/opengapps/package-api/pkg/gapps"
 )
 
 const latestReleaseURLTemplate = "https://raw.githubusercontent.com/opengapps/%s/master/LATEST.json"
