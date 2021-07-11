@@ -12,7 +12,8 @@ import (
 
 	"github.com/gorilla/feeds"
 	"github.com/gorilla/mux"
-	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+
+	"github.com/opengapps/package-api/pkg/gapps"
 )
 
 const archAll = "all"

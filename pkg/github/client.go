@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/go-github/v32/github"
-	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
+	"github.com/google/go-github/v37/github"
+	"github.com/opengapps/package-api/pkg/gapps"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"

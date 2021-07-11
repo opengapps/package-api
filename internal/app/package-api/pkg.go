@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nezorflame/opengapps-mirror-bot/pkg/gapps"
-
 	"github.com/opengapps/package-api/internal/pkg/db"
+	"github.com/opengapps/package-api/pkg/gapps"
 )
 
 const (

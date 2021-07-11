@@ -85,7 +85,7 @@ func main() {
 
 	// init graceful stop chan
 	log.Debug("Initiating system signal watcher")
-	var gracefulStop = make(chan os.Signal)
+	var gracefulStop = make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM)
 	signal.Notify(gracefulStop, syscall.SIGINT)
 
