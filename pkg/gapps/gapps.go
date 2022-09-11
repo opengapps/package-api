@@ -35,6 +35,8 @@ const (
 	Android90
 	Android100
 	Android110
+	Android120
+	Android121
 )
 
 // HumanString is required for human-readable Android version with . delimiter
