@@ -7,7 +7,6 @@ APP_VERSION?=$(if $(GIT_TAG),$(GIT_TAG),$(shell git describe --all --long HEAD 2
 GO_VERSION:=$(shell go version)
 GO_VERSION_SHORT:=$(shell echo $(GO_VERSION)|sed -E 's/.* go(.*) .*/\1/g')
 
-export GO111MODULE=on
 export GOPROXY=https://proxy.golang.org
 BUILD_ENVPARMS:=CGO_ENABLED=0
 BUILD_TS:=$(shell date +%FT%T%z)
@@ -60,4 +59,4 @@ run:
 
 .PHONY: lint
 lint:
-	golangci-lint run --config=.golangci.yml ./...
+	golangci-lint run --config=.golangci.yml --timeout=5m ./...

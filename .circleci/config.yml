@@ -1,9 +1,9 @@
 version: 2
+
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.13
-    working_directory: /go/src/github.com/opengapps/package-api
+      - image: cimg/go:1.19
     steps:
       - checkout
       - restore_cache:
@@ -20,8 +20,7 @@ jobs:
             - /go/pkg/mod/cache/download/
   lint:
     docker:
-      - image: golangci/golangci-lint:v1.23
-    working_directory: /go/src/github.com/opengapps/package-api
+      - image: golangci/golangci-lint:v1.49
     steps:
       - checkout
       - restore_cache:
@@ -32,6 +31,7 @@ jobs:
       - run:
           name: Lint
           command: make lint
+
 workflows:
   version: 2
   test_and_lint:

@@ -32,16 +32,12 @@ linters:
     - revive
     - govet
     - errcheck
-    - deadcode
-    - structcheck
-    - varcheck
     - ineffassign
     - typecheck
     - dupl
     - goconst
     - gosec
-    - staticcheck # (ex-megacheck)
-    # - goimports - IDE should do this automatically as 'On save' action
+    # - staticcheck # not for 1.18
 
 issues:
   exclude-use-default: false
@@ -53,7 +49,7 @@ issues:
     # can be removed in the development phase
     # - (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
     # not for the active development - can be removed in the stable phase
-    - should have a package comment, unless it's in another file for this package
+    - "package-comments: should have a package comment"
     # - don't use an underscore in package name
     # errcheck: Almost all programs ignore errors on these functions and in most cases it's ok
     - Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv|.*Rollback). is not checked
