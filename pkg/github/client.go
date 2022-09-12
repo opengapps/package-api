@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/go-github/v37/github"
+	"github.com/google/go-github/v47/github"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
