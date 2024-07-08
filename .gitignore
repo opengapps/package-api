@@ -32,6 +32,10 @@ bin
 vendor
 *debug*
 
+# Go workspace files
+go.work
+go.work.sum
+
 # Unneeded files and folders
 .DS_Store
 config.toml

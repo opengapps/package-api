@@ -49,7 +49,7 @@ func New(opts ...Option) (*application, error) {
 		ReadTimeout:  a.cfg.GetDuration(config.HTTPTimeoutKey),
 		WriteTimeout: a.cfg.GetDuration(config.HTTPTimeoutKey),
 	}
-	app.PrintInfo(a.cfg)
+	app.PrintInfo()
 
 	return a, nil
 }
